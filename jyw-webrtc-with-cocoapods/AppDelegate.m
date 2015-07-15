@@ -7,6 +7,9 @@
 //
 
 #import "AppDelegate.h"
+#import "JYWMainViewController.h"
+
+#import "RTCPeerConnectionFactory.h"
 
 @interface AppDelegate ()
 
@@ -16,7 +19,11 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    [RTCPeerConnectionFactory initializeSSL];
+    _window =  [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    [_window makeKeyAndVisible];
+    JYWMainViewController *viewController = [[JYWMainViewController alloc] init];
+    _window.rootViewController = viewController;
     return YES;
 }
 
