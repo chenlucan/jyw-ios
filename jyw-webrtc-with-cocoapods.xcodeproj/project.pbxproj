@@ -14,6 +14,7 @@
 		512885B91B56D27200A48470 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 512885B81B56D27200A48470 /* Images.xcassets */; };
 		512885BC1B56D27200A48470 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 512885BA1B56D27200A48470 /* LaunchScreen.xib */; };
 		512885C81B56D27200A48470 /* jyw_webrtc_with_cocoapodsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 512885C71B56D27200A48470 /* jyw_webrtc_with_cocoapodsTests.m */; };
+		93BA25760980F085607AADF0 /* libPods-jyw-webrtc-with-cocoapods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5ED1DF14E566134090278225 /* libPods-jyw-webrtc-with-cocoapods.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,9 @@
 		512885C11B56D27200A48470 /* jyw-webrtc-with-cocoapodsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "jyw-webrtc-with-cocoapodsTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		512885C61B56D27200A48470 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		512885C71B56D27200A48470 /* jyw_webrtc_with_cocoapodsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = jyw_webrtc_with_cocoapodsTests.m; sourceTree = "<group>"; };
+		5ED1DF14E566134090278225 /* libPods-jyw-webrtc-with-cocoapods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-jyw-webrtc-with-cocoapods.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6079BB582E8FCDDC4B695FD7 /* Pods-jyw-webrtc-with-cocoapods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-jyw-webrtc-with-cocoapods.debug.xcconfig"; path = "Pods/Target Support Files/Pods-jyw-webrtc-with-cocoapods/Pods-jyw-webrtc-with-cocoapods.debug.xcconfig"; sourceTree = "<group>"; };
+		8948634D5039DC5FEF2E164E /* Pods-jyw-webrtc-with-cocoapods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-jyw-webrtc-with-cocoapods.release.xcconfig"; path = "Pods/Target Support Files/Pods-jyw-webrtc-with-cocoapods/Pods-jyw-webrtc-with-cocoapods.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				93BA25760980F085607AADF0 /* libPods-jyw-webrtc-with-cocoapods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +71,8 @@
 				512885AA1B56D27200A48470 /* jyw-webrtc-with-cocoapods */,
 				512885C41B56D27200A48470 /* jyw-webrtc-with-cocoapodsTests */,
 				512885A91B56D27200A48470 /* Products */,
+				6805FECDFA3E0C8970D00C70 /* Pods */,
+				AA6939A18EE43E6B5287A5A0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -119,6 +126,23 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		6805FECDFA3E0C8970D00C70 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				6079BB582E8FCDDC4B695FD7 /* Pods-jyw-webrtc-with-cocoapods.debug.xcconfig */,
+				8948634D5039DC5FEF2E164E /* Pods-jyw-webrtc-with-cocoapods.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		AA6939A18EE43E6B5287A5A0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5ED1DF14E566134090278225 /* libPods-jyw-webrtc-with-cocoapods.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -126,9 +150,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 512885CB1B56D27200A48470 /* Build configuration list for PBXNativeTarget "jyw-webrtc-with-cocoapods" */;
 			buildPhases = (
+				68BFF65EB413AFC5476D6579 /* Check Pods Manifest.lock */,
 				512885A41B56D27200A48470 /* Sources */,
 				512885A51B56D27200A48470 /* Frameworks */,
 				512885A61B56D27200A48470 /* Resources */,
+				CF95183EBAF46B2BFC22D60B /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -213,6 +239,39 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		68BFF65EB413AFC5476D6579 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		CF95183EBAF46B2BFC22D60B /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-jyw-webrtc-with-cocoapods/Pods-jyw-webrtc-with-cocoapods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		512885A41B56D27200A48470 /* Sources */ = {
@@ -345,6 +404,7 @@
 		};
 		512885CC1B56D27200A48470 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6079BB582E8FCDDC4B695FD7 /* Pods-jyw-webrtc-with-cocoapods.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = "jyw-webrtc-with-cocoapods/Info.plist";
@@ -355,6 +415,7 @@
 		};
 		512885CD1B56D27200A48470 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8948634D5039DC5FEF2E164E /* Pods-jyw-webrtc-with-cocoapods.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = "jyw-webrtc-with-cocoapods/Info.plist";
@@ -416,6 +477,7 @@
 				512885CD1B56D27200A48470 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		512885CE1B56D27200A48470 /* Build configuration list for PBXNativeTarget "jyw-webrtc-with-cocoapodsTests" */ = {
 			isa = XCConfigurationList;
@@ -424,6 +486,7 @@
 				512885D01B56D27200A48470 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
