@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		43DC492E9F14DC92CD0941A2 /* Pods_jyw_webrtc_with_cocoapods.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B06469428471F240476FF8E9 /* Pods_jyw_webrtc_with_cocoapods.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		512885AE1B56D27200A48470 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 512885AD1B56D27200A48470 /* main.m */; };
 		512885B11B56D27200A48470 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 512885B01B56D27200A48470 /* AppDelegate.m */; };
 		512885B41B56D27200A48470 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 512885B31B56D27200A48470 /* ViewController.m */; };
@@ -22,7 +23,6 @@
 		51C1D1811B56D85800B85ECC /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51C1D1801B56D85800B85ECC /* CFNetwork.framework */; };
 		51C1D1831B56D86100B85ECC /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51C1D1821B56D86100B85ECC /* Security.framework */; };
 		51C1D1851B56D86A00B85ECC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51C1D1841B56D86A00B85ECC /* Foundation.framework */; };
-		93BA25760980F085607AADF0 /* libPods-jyw-webrtc-with-cocoapods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5ED1DF14E566134090278225 /* libPods-jyw-webrtc-with-cocoapods.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,9 +62,9 @@
 		51C1D1801B56D85800B85ECC /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		51C1D1821B56D86100B85ECC /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		51C1D1841B56D86A00B85ECC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		5ED1DF14E566134090278225 /* libPods-jyw-webrtc-with-cocoapods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-jyw-webrtc-with-cocoapods.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6079BB582E8FCDDC4B695FD7 /* Pods-jyw-webrtc-with-cocoapods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-jyw-webrtc-with-cocoapods.debug.xcconfig"; path = "Pods/Target Support Files/Pods-jyw-webrtc-with-cocoapods/Pods-jyw-webrtc-with-cocoapods.debug.xcconfig"; sourceTree = "<group>"; };
 		8948634D5039DC5FEF2E164E /* Pods-jyw-webrtc-with-cocoapods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-jyw-webrtc-with-cocoapods.release.xcconfig"; path = "Pods/Target Support Files/Pods-jyw-webrtc-with-cocoapods/Pods-jyw-webrtc-with-cocoapods.release.xcconfig"; sourceTree = "<group>"; };
+		B06469428471F240476FF8E9 /* Pods_jyw_webrtc_with_cocoapods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_jyw_webrtc_with_cocoapods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,7 +76,7 @@
 				51C1D1831B56D86100B85ECC /* Security.framework in Frameworks */,
 				51C1D1811B56D85800B85ECC /* CFNetwork.framework in Frameworks */,
 				51C1D17F1B56D84E00B85ECC /* libicucore.dylib in Frameworks */,
-				93BA25760980F085607AADF0 /* libPods-jyw-webrtc-with-cocoapods.a in Frameworks */,
+				43DC492E9F14DC92CD0941A2 /* Pods_jyw_webrtc_with_cocoapods.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,7 +184,7 @@
 				51C1D1821B56D86100B85ECC /* Security.framework */,
 				51C1D1801B56D85800B85ECC /* CFNetwork.framework */,
 				51C1D17E1B56D84E00B85ECC /* libicucore.dylib */,
-				5ED1DF14E566134090278225 /* libPods-jyw-webrtc-with-cocoapods.a */,
+				B06469428471F240476FF8E9 /* Pods_jyw_webrtc_with_cocoapods.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -201,6 +201,7 @@
 				512885A51B56D27200A48470 /* Frameworks */,
 				512885A61B56D27200A48470 /* Resources */,
 				CF95183EBAF46B2BFC22D60B /* Copy Pods Resources */,
+				533EC3393D927D67063AD728 /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -287,6 +288,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		533EC3393D927D67063AD728 /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-jyw-webrtc-with-cocoapods/Pods-jyw-webrtc-with-cocoapods-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		68BFF65EB413AFC5476D6579 /* Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

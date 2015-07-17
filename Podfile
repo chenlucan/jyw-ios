@@ -5,6 +5,10 @@ target 'jyw-webrtc-with-cocoapods' do
 
 pod 'WebRTC', :path => "/Users/lucan/projects/webrtc-ios"
 
+source 'https://github.com/CocoaPods/Specs.git'
+use_frameworks!
+pod "PubNub", "~> 4.0"
+
 end
 
 target 'jyw-webrtc-with-cocoapodsTests' do

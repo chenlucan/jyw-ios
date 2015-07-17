@@ -4,6 +4,16 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>Pods-jyw-webrtc-with-cocoapods-CocoaLumberjack.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>Pods-jyw-webrtc-with-cocoapods-PubNub.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Pods-jyw-webrtc-with-cocoapods.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -12,7 +22,17 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>DFAD9813E3CC4E65052FA2F4</key>
+		<key>72AED01F5DF2853A65D7B8D2</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>F8D030CB831E42BECDB12045</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>FD4232AA26AB4386DBC4F968</key>
 		<dict>
 			<key>primary</key>
 			<true/>
