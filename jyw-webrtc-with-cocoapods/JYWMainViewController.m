@@ -5,7 +5,7 @@
 
 #import "SRWebSocket.h"
 
-#import "RTCPeerConnection.h"
+#import <WebRTC/RTCPeerConnection.h>
 #import "RTCPeerConnectionDelegate.h"
 #import "RTCPeerConnectionFactory.h"
 #import "RTCSessionDescriptionDelegate.h"

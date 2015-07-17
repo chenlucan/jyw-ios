@@ -1,6 +1,0 @@
-framework module Pods_jyw_webrtc_with_cocoapods {
-  umbrella header "Pods-jyw-webrtc-with-cocoapods-umbrella.h"
-
-  export *
-  module * { export * }
-}

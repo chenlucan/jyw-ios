@@ -1,6 +1,0 @@
-framework module CocoaLumberjack {
-  umbrella header "Pods-jyw-webrtc-with-cocoapods-CocoaLumberjack-umbrella.h"
-
-  export *
-  module * { export * }
-}
