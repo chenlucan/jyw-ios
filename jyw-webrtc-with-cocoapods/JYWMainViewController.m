@@ -26,28 +26,42 @@
 @end
 
 @implementation JYWMainViewController {
-//    SRWebSocket *_socket;
 }
 
 - (instancetype)init {
     if (self = [super init]) {
-        self.socket = [[SRWebSocket alloc] initWithURL:@"wss://pubsub.pubnub.com/demo/demo/webrtc-app"];
+        NSString *urlString = @"ws://localhost:8080";
+//        NSString *urlString = @"wss://echo.websocket.org";
+//        NSString *urlString = @"wss://pubsub.pubnub.com/demo/demo/webrtc-app";
+
+//        NSURL *url  = [[NSURL alloc] initWithString:@"wss://pubsub.pubnub.com/demo/demo/webrtc-app"];
+//        self.socket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:url]];
+//        self.socket.delegate = self;
+        
+        self.socket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:urlString]];
         self.socket.delegate = self;
+        [self.socket open];
+        
         [RTCPeerConnectionFactory initializeSSL];
         self.factory = [[RTCPeerConnectionFactory alloc] init];
 
         
         // Create peer connection.
-        NSArray *optionalConstraints = @[
-                                         [[RTCPair alloc] initWithKey:@"DtlsSrtpKeyAgreement" value:@"true"]
-                                         ];
+        NSArray *optionalConstraints = @[[[RTCPair alloc] initWithKey:@"DtlsSrtpKeyAgreement"
+                                                                value:@"true"]];
         RTCMediaConstraints* constraints =
         [[RTCMediaConstraints alloc]
          initWithMandatoryConstraints:nil
          optionalConstraints:optionalConstraints];
+        
 //        RTCConfiguration *config = [[RTCConfiguration alloc] init];
 //        config.iceServers = _iceServers;
-        NSArray *ice_servers = @[@""];
+        NSURL *defaultSTUNServerURL = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
+        RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:defaultSTUNServerURL
+                                        username:@""
+                                        password:@""];
+        NSArray *ice_servers = @[server1];
+        
         self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:constraints delegate:self];
         RTCMediaConstraints * media_constraints = [[RTCMediaConstraints alloc] initWithMandatoryConstraints:@[] optionalConstraints:@[]];
         [self.peerConnection createOfferWithDelegate:self
@@ -101,7 +115,8 @@
 
 - (void)start {
 //    [_client connectToRoomWithId:@"comlucanchen" options:nil];
-    [self.socket open];
+    [self showAlertWithMessage:@"Received start request from JYWMainView"];
+//        [self.socket open];
 }
 
 - (void)stop {
@@ -155,6 +170,7 @@
 }
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
     [self showAlertWithMessage:@"Delegate: webSocket didFailWithError"];
+    NSLog(@"=======%ld====%@", (long)error.code, error.description);
 }
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     [self showAlertWithMessage:@"Delegate: webSocket didCloseWithCode"];
@@ -231,6 +247,10 @@ didCreateSessionDescription:(RTCSessionDescription *)sdp
                  error:(NSError *)error {
     [peerConnection setLocalDescriptionWithDelegate:self
 sessionDescription:sdp];
+    if (sdp.description.length <= 700) {
+        NSLog(@"==============================descrition less 700");
+        return;
+    }
     NSString* sdpPart1 = [sdp.description substringWithRange:NSMakeRange(0, 700)];
     NSString* sdpPart2 = [sdp.description substringWithRange:NSMakeRange(700, sdp.description.length-700)];
 

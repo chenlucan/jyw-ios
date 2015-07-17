@@ -134,11 +134,22 @@ static CGFloat const kAppLabelHeight = 20;
     _roomText.delegate = self;
     [self addSubview:_roomText];
       
-    _startButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [_startButton addTarget:self
-                     action:@selector(onStart:)
-           forControlEvents:UIControlEventTouchUpInside];
-    [self addSubview:_startButton];
+      
+      
+      
+      _startButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+      [_startButton addTarget:self
+                 action:@selector(onStart:)
+       forControlEvents:UIControlEventTouchUpInside];
+      [_startButton setTitle:@"Show View" forState:UIControlStateNormal];
+      _startButton.frame = CGRectMake(80.0, 210.0, 160.0, 40.0);
+      [self addSubview:_startButton];
+      
+//    _startButton = [UIButton buttonWithType:UIButtonTypeSystem];
+//    [_startButton addTarget:self
+//                     action:@selector(onStart:)
+//           forControlEvents:UIControlEventTouchUpInside];
+//    [self addSubview:_startButton];
 
     self.backgroundColor = [UIColor whiteColor];
   }
@@ -153,7 +164,8 @@ static CGFloat const kAppLabelHeight = 20;
                                kStatusBarHeight + kRoomTextFieldMargin,
                                roomTextWidth,
                                roomTextHeight);
-  _appLabel.center = CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds));
+//  _appLabel.center    = CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds));
+  _startButton.center = CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds));
 }
 
 #pragma mark - JYWRoomTextFieldDelegate
@@ -166,6 +178,7 @@ static CGFloat const kAppLabelHeight = 20;
 #pragma mark - start button touch event
 - (void)onStart:(id)sender {
     // kick JYWMainViewDelegate to start create connection and offer
+    [self.delegate start];
 }
 
 @end
