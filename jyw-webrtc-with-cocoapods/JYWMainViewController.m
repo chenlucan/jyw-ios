@@ -3,8 +3,6 @@
 
 #import "JYWMainView.h"
 
-#import "SRWebSocket.h"
-
 #import <WebRTC/RTCPeerConnection.h>
 #import "RTCPeerConnectionDelegate.h"
 #import "RTCPeerConnectionFactory.h"
@@ -15,13 +13,15 @@
 #import "RTCICECandidate.h"
 #import "RTCSessionDescription.h"
 
-@interface JYWMainViewController () <JYWMainViewDelegate, SRWebSocketDelegate, RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate>
+#import <PubNub/PubNub.h>
+
+@interface JYWMainViewController () <JYWMainViewDelegate, RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener>
 
 @property(nonatomic, strong) NSString *userID;
 @property(nonatomic, strong) RTCPeerConnection *peerConnection;
 @property(nonatomic, strong) RTCPeerConnectionFactory *factory;
 @property(nonatomic, strong) NSMutableArray *messageQueue;
-@property(nonatomic, strong) SRWebSocket *socket;
+@property (nonatomic) PubNub *client;
 
 @end
 
@@ -37,10 +37,16 @@
 //        NSURL *url  = [[NSURL alloc] initWithString:@"wss://pubsub.pubnub.com/demo/demo/webrtc-app"];
 //        self.socket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:url]];
 //        self.socket.delegate = self;
-        
-        self.socket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:urlString]];
-        self.socket.delegate = self;
-        [self.socket open];
+//        
+//        self.socket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:urlString]];
+//        self.socket.delegate = self;
+//        [self.socket open];
+//pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37/sub-c-3af2bc02-2b93-11e5-9bdb-0619f8945a4f
+        PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37"
+                                                                         subscribeKey:@"sub-c-3af2bc02-2b93-11e5-9bdb-0619f8945a4f"];
+        self.client = [PubNub clientWithConfiguration:configuration];
+        [self.client addListener:self];
+        [self.client subscribeToChannels:@[@"webrtc-app"] withPresence:YES];
         
         [RTCPeerConnectionFactory initializeSSL];
         self.factory = [[RTCPeerConnectionFactory alloc] init];
@@ -121,63 +127,63 @@
 
 - (void)stop {
 //    [_client disconnect];
-    [self.socket close];
+//    [self.socket close];
 }
-
-#pragma mark - SRWebSocketDelegate
-
-// message will either be an NSString if the server is using text
-// or NSData if the server is using binary.
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    NSString *messageString = message;
-    NSData *messageData = [messageString dataUsingEncoding:NSUTF8StringEncoding];
-    id jsonObject = [NSJSONSerialization JSONObjectWithData:messageData
-                                                    options:0
-                                                      error:nil];
-    if (![jsonObject isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"Unexpected message: %@", jsonObject);
-        [self showAlertWithMessage:@"Unexpected message"];
-        return;
-    }
-    NSDictionary *wssMessage = jsonObject;
-    NSString *userID = wssMessage[@"userID"];
-    if(wssMessage[@"userID"] == userID || wssMessage[@"userID"] !=@"com.lucanchen.answerer") return;
-    
-//    if (errorString.length) {
-//        NSLog(@"WSS error: %@", errorString);
-//        [self showAlertWithMessage:@"WSS error"];
+//
+//#pragma mark - SRWebSocketDelegate
+//
+//// message will either be an NSString if the server is using text
+//// or NSData if the server is using binary.
+//- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
+//    NSString *messageString = message;
+//    NSData *messageData = [messageString dataUsingEncoding:NSUTF8StringEncoding];
+//    id jsonObject = [NSJSONSerialization JSONObjectWithData:messageData
+//                                                    options:0
+//                                                      error:nil];
+//    if (![jsonObject isKindOfClass:[NSDictionary class]]) {
+//        NSLog(@"Unexpected message: %@", jsonObject);
+//        [self showAlertWithMessage:@"Unexpected message"];
 //        return;
 //    }
-    if ([wssMessage objectForKey:@"firstPart"] || [wssMessage objectForKey:@"secondPart"]) {
-        
-    }
-    if ([wssMessage objectForKey:@"candidate"]) {
-        NSString *mid   = wssMessage[@"candidate"][@"sdpMid"];
-        NSInteger index = wssMessage[@"candidate"][@"sdpMLineIndex"];
-        NSString *sdp   = wssMessage[@"candidate"][@"sdp"];
-        
-        RTCICECandidate *rtc_candidate = [[RTCICECandidate alloc] initWithMid:mid
-                    index: index
-                      sdp:sdp];
-        
-        [self.peerConnection addICECandidate:rtc_candidate];
-    }
-    [self showAlertWithMessage:@"Received paload"];
-}
-
-- (void)webSocketDidOpen:(SRWebSocket *)webSocket {
-    [self showAlertWithMessage:@"Delegate: webSocketDidOpen"];
-}
-- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
-    [self showAlertWithMessage:@"Delegate: webSocket didFailWithError"];
-    NSLog(@"=======%ld====%@", (long)error.code, error.description);
-}
-- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
-    [self showAlertWithMessage:@"Delegate: webSocket didCloseWithCode"];
-}
-- (void)webSocket:(SRWebSocket *)webSocket didReceivePong:(NSData *)pongPayload {
-    [self showAlertWithMessage:@"Delegate: webSocket didReceivePong"];
-}
+//    NSDictionary *wssMessage = jsonObject;
+//    NSString *userID = wssMessage[@"userID"];
+//    if(wssMessage[@"userID"] == userID || wssMessage[@"userID"] !=@"com.lucanchen.answerer") return;
+//    
+////    if (errorString.length) {
+////        NSLog(@"WSS error: %@", errorString);
+////        [self showAlertWithMessage:@"WSS error"];
+////        return;
+////    }
+//    if ([wssMessage objectForKey:@"firstPart"] || [wssMessage objectForKey:@"secondPart"]) {
+//        
+//    }
+//    if ([wssMessage objectForKey:@"candidate"]) {
+//        NSString *mid   = wssMessage[@"candidate"][@"sdpMid"];
+//        NSInteger index = wssMessage[@"candidate"][@"sdpMLineIndex"];
+//        NSString *sdp   = wssMessage[@"candidate"][@"sdp"];
+//        
+//        RTCICECandidate *rtc_candidate = [[RTCICECandidate alloc] initWithMid:mid
+//                    index: index
+//                      sdp:sdp];
+//        
+//        [self.peerConnection addICECandidate:rtc_candidate];
+//    }
+//    [self showAlertWithMessage:@"Received paload"];
+//}
+//
+//- (void)webSocketDidOpen:(SRWebSocket *)webSocket {
+//    [self showAlertWithMessage:@"Delegate: webSocketDidOpen"];
+//}
+//- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+//    [self showAlertWithMessage:@"Delegate: webSocket didFailWithError"];
+//    NSLog(@"=======%ld====%@", (long)error.code, error.description);
+//}
+//- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
+//    [self showAlertWithMessage:@"Delegate: webSocket didCloseWithCode"];
+//}
+//- (void)webSocket:(SRWebSocket *)webSocket didReceivePong:(NSData *)pongPayload {
+//    [self showAlertWithMessage:@"Delegate: webSocket didReceivePong"];
+//}
 
 #pragma mark - RTCPeerConnectionDelegate
 // Triggered when the SignalingState changed.
@@ -230,7 +236,7 @@
                                                    options:NSJSONWritingPrettyPrinted
                                                      error:nil];
     
-    [self.socket send:data];
+//    [self.socket send:data];
 }
 
 // New data channel has been opened.
@@ -276,14 +282,128 @@ sessionDescription:sdp];
     
     NSString *dataStr2 = [[NSString alloc]initWithData:data2
                                               encoding: NSUTF8StringEncoding];
-    [self.socket send:dataStr1];
-    [self.socket send:dataStr2];
+//    [self.socket send:dataStr1];
+//    [self.socket send:dataStr2];
 }
 
 // Called when setting a local or remote description.
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
 didSetSessionDescriptionWithError:(NSError *)error {
     
+}
+
+#pragma mark - PNObjectEventListener
+
+/**
+ @brief  Notify listener about new message which arrived from one of remote data object's live feed
+ on which client subscribed at this moment.
+ 
+ @param client  Reference on \b PubNub client which triggered this callback method call.
+ @param message Reference on \b PNResult instance which store message information in \c data
+ property.
+ 
+ @since 4.0
+ */
+- (void)client:(PubNub *)client didReceiveMessage:(PNMessageResult *)message {
+    
+    // Handle new message stored in message.data.message
+    if (message.data.actualChannel) {
+        
+        // Message has been received on channel group stored in
+        // message.data.subscribedChannel
+    }
+    else {
+        
+        // Message has been received on channel stored in
+        // message.data.subscribedChannel
+    }
+    NSLog(@"Received message: %@ on channel %@ at %@", message.data.message,
+          message.data.subscribedChannel, message.data.timetoken);
+}
+
+/**
+ @brief  Notify listener about new presence events which arrived from one of remote data object's
+ presence live feed on which client subscribed at this moment.
+ 
+ @param client Reference on \b PubNub client which triggered this callback method call.
+ @param event  Reference on \b PNResult instance which store presence event information in
+ \c data property.
+ 
+ @since 4.0
+ */
+- (void)client:(PubNub *)client didReceivePresenceEvent:(PNPresenceEventResult *)event {
+    
+    // Handle presence event event.data.presenceEvent (one of: join, leave, timeout,
+    // state-change).
+    if (event.data.actualChannel) {
+        
+        // Presence event has been received on channel group stored in
+        // event.data.subscribedChannel
+    }
+    else {
+        
+        // Presence event has been received on channel stored in
+        // event.data.subscribedChannel
+    }
+    NSLog(@"Did receive presence event: %@", event.data.presenceEvent);
+    
+}
+
+
+///------------------------------------------------
+/// @name Status change handler.
+///------------------------------------------------
+
+/**
+ @brief      Notify listener about subscription state changes.
+ @discussion This callback can fire when client tried to subscribe on channels for which it doesn't
+ have access rights or when network went down and client unexpectedly disconnected.
+ 
+ @param client Reference on \b PubNub client which triggered this callback method call.
+ @param status  Reference on \b PNStatus instance which store subscriber state information.
+ 
+ @since 4.0
+ */
+- (void)client:(PubNub *)client didReceiveStatus:(PNSubscribeStatus *)status {
+    
+    if (status.category == PNUnexpectedDisconnectCategory) {
+        // This event happens when radio / connectivity is lost
+    }
+    
+    else if (status.category == PNConnectedCategory) {
+        
+        // Connect event. You can do stuff like publish, and know you'll get it.
+        // Or just use the connected event to confirm you are subscribed for
+        // UI / internal notifications, etc
+        
+        [self.client publish:@"Hello from the PubNub Objective-C SDK" toChannel:@"my_channel"
+              withCompletion:^(PNPublishStatus *status) {
+                  
+                  // Check whether request successfully completed or not.
+                  if (!status.isError) {
+                      
+                      // Message successfully published to specified channel.
+                  }
+                  // Request processing failed.
+                  else {
+                      
+                      // Handle message publish error. Check 'category' property to find out possible issue
+                      // because of which request did fail.
+                      //
+                      // Request can be resent using: [status retry];
+                  }
+              }];
+    }
+    else if (status.category == PNReconnectedCategory) {
+        
+        // Happens as part of our regular operation. This event happens when
+        // radio / connectivity is lost, then regained.
+    }
+    else if (status.category == PNDecryptionErrorCategory) {
+        
+        // Handle messsage decryption error. Probably client configured to
+        // encrypt messages and on live data feed it received plain text.
+    }
 }
 
 #pragma mark - Private
