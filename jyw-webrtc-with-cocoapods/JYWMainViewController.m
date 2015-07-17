@@ -18,9 +18,11 @@
 @interface JYWMainViewController () <JYWMainViewDelegate, RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener>
 
 @property(nonatomic, strong) NSString *userID;
+@property(nonatomic, strong) NSString *other_userID;
 @property(nonatomic, strong) RTCPeerConnection *peerConnection;
 @property(nonatomic, strong) RTCPeerConnectionFactory *factory;
 @property(nonatomic, strong) NSMutableArray *messageQueue;
+
 @property (nonatomic) PubNub *client;
 
 @end
@@ -30,18 +32,8 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        NSString *urlString = @"ws://localhost:8080";
-//        NSString *urlString = @"wss://echo.websocket.org";
-//        NSString *urlString = @"wss://pubsub.pubnub.com/demo/demo/webrtc-app";
-
-//        NSURL *url  = [[NSURL alloc] initWithString:@"wss://pubsub.pubnub.com/demo/demo/webrtc-app"];
-//        self.socket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:url]];
-//        self.socket.delegate = self;
-//        
-//        self.socket = [[SRWebSocket alloc] initWithURL:[NSURL URLWithString:urlString]];
-//        self.socket.delegate = self;
-//        [self.socket open];
-//pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37/sub-c-3af2bc02-2b93-11e5-9bdb-0619f8945a4f
+        self.userID = @"com.lucanchen.offerer";
+        self.other_userID = @"com.lucanchen.answerer";
         PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37"
                                                                          subscribeKey:@"sub-c-3af2bc02-2b93-11e5-9bdb-0619f8945a4f"];
         self.client = [PubNub clientWithConfiguration:configuration];
@@ -55,23 +47,18 @@
         // Create peer connection.
         NSArray *optionalConstraints = @[[[RTCPair alloc] initWithKey:@"DtlsSrtpKeyAgreement"
                                                                 value:@"true"]];
-        RTCMediaConstraints* constraints =
-        [[RTCMediaConstraints alloc]
-         initWithMandatoryConstraints:nil
-         optionalConstraints:optionalConstraints];
+        RTCMediaConstraints* constraints = [[RTCMediaConstraints alloc] initWithMandatoryConstraints:nil
+                                                                                 optionalConstraints:optionalConstraints];
         
-//        RTCConfiguration *config = [[RTCConfiguration alloc] init];
-//        config.iceServers = _iceServers;
         NSURL *defaultSTUNServerURL = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
         RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:defaultSTUNServerURL
-                                        username:@""
-                                        password:@""];
+                                                         username:@""
+                                                         password:@""];
         NSArray *ice_servers = @[server1];
-        
         self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:constraints delegate:self];
         RTCMediaConstraints * media_constraints = [[RTCMediaConstraints alloc] initWithMandatoryConstraints:@[] optionalConstraints:@[]];
         [self.peerConnection createOfferWithDelegate:self
-                                     constraints:media_constraints];
+                                         constraints:media_constraints];
     }
     return self;
 }
@@ -120,70 +107,12 @@
 }
 
 - (void)start {
-//    [_client connectToRoomWithId:@"comlucanchen" options:nil];
     [self showAlertWithMessage:@"Received start request from JYWMainView"];
-//        [self.socket open];
+
 }
 
 - (void)stop {
-//    [_client disconnect];
-//    [self.socket close];
 }
-//
-//#pragma mark - SRWebSocketDelegate
-//
-//// message will either be an NSString if the server is using text
-//// or NSData if the server is using binary.
-//- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-//    NSString *messageString = message;
-//    NSData *messageData = [messageString dataUsingEncoding:NSUTF8StringEncoding];
-//    id jsonObject = [NSJSONSerialization JSONObjectWithData:messageData
-//                                                    options:0
-//                                                      error:nil];
-//    if (![jsonObject isKindOfClass:[NSDictionary class]]) {
-//        NSLog(@"Unexpected message: %@", jsonObject);
-//        [self showAlertWithMessage:@"Unexpected message"];
-//        return;
-//    }
-//    NSDictionary *wssMessage = jsonObject;
-//    NSString *userID = wssMessage[@"userID"];
-//    if(wssMessage[@"userID"] == userID || wssMessage[@"userID"] !=@"com.lucanchen.answerer") return;
-//    
-////    if (errorString.length) {
-////        NSLog(@"WSS error: %@", errorString);
-////        [self showAlertWithMessage:@"WSS error"];
-////        return;
-////    }
-//    if ([wssMessage objectForKey:@"firstPart"] || [wssMessage objectForKey:@"secondPart"]) {
-//        
-//    }
-//    if ([wssMessage objectForKey:@"candidate"]) {
-//        NSString *mid   = wssMessage[@"candidate"][@"sdpMid"];
-//        NSInteger index = wssMessage[@"candidate"][@"sdpMLineIndex"];
-//        NSString *sdp   = wssMessage[@"candidate"][@"sdp"];
-//        
-//        RTCICECandidate *rtc_candidate = [[RTCICECandidate alloc] initWithMid:mid
-//                    index: index
-//                      sdp:sdp];
-//        
-//        [self.peerConnection addICECandidate:rtc_candidate];
-//    }
-//    [self showAlertWithMessage:@"Received paload"];
-//}
-//
-//- (void)webSocketDidOpen:(SRWebSocket *)webSocket {
-//    [self showAlertWithMessage:@"Delegate: webSocketDidOpen"];
-//}
-//- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
-//    [self showAlertWithMessage:@"Delegate: webSocket didFailWithError"];
-//    NSLog(@"=======%ld====%@", (long)error.code, error.description);
-//}
-//- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
-//    [self showAlertWithMessage:@"Delegate: webSocket didCloseWithCode"];
-//}
-//- (void)webSocket:(SRWebSocket *)webSocket didReceivePong:(NSData *)pongPayload {
-//    [self showAlertWithMessage:@"Delegate: webSocket didReceivePong"];
-//}
 
 #pragma mark - RTCPeerConnectionDelegate
 // Triggered when the SignalingState changed.
@@ -225,47 +154,58 @@
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
        gotICECandidate:(RTCICECandidate *)candidate {
     NSDictionary* dataDict = @{
-        @"userID" : @"com.lucanchen.offerer",
+        @"userID" : self.userID,
         @"candidate": @{
             @"sdpMLineIndex" : [NSNumber numberWithInteger:candidate.sdpMLineIndex],
             @"sdpMid"        : candidate.sdpMid,
             @"candidate"     : candidate.sdp
         }
     };
-    NSData *data = [NSJSONSerialization dataWithJSONObject: dataDict
-                                                   options:NSJSONWritingPrettyPrinted
-                                                     error:nil];
-    
-//    [self.socket send:data];
+    [self.client publish:dataDict toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+        [self processPublishStatus:status];
+    }];
+    NSLog(@"sending icecandidate");
 }
 
 // New data channel has been opened.
 - (void)peerConnection:(RTCPeerConnection*)peerConnection
     didOpenDataChannel:(RTCDataChannel*)dataChannel {
-    
 }
 
 #pragma mark - RTCSessionDescriptionDelegate
 
 // Called when creating a session.
-- (void)peerConnection:(RTCPeerConnection *)peerConnection
-didCreateSessionDescription:(RTCSessionDescription *)sdp
-                 error:(NSError *)error {
-    [peerConnection setLocalDescriptionWithDelegate:self
-sessionDescription:sdp];
+- (void)peerConnection:(RTCPeerConnection *)peerConnection didCreateSessionDescription:(RTCSessionDescription *)sdp error:(NSError *)error {
+    NSLog(@"===========================error.code: %ld", error.code);
+    [peerConnection setLocalDescriptionWithDelegate:self sessionDescription:sdp];
     if (sdp.description.length <= 700) {
         NSLog(@"==============================descrition less 700");
+        
+        NSDictionary *json = @{
+                               @"type" : sdp.type,
+                               @"sdp" : sdp.description
+        };
+//        NSData* data = [NSJSONSerialization dataWithJSONObject:json options:0 error:nil];
+        
+        NSDictionary *dataDict = @{
+                                    @"userID":self.userID,
+                                    @"fullPart":json
+                                  };
+        [self.client publish:dataDict toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+            [self processPublishStatus:status];
+        }];
         return;
     }
+    NSLog(@"==============================700 >>>> description");
     NSString* sdpPart1 = [sdp.description substringWithRange:NSMakeRange(0, 700)];
     NSString* sdpPart2 = [sdp.description substringWithRange:NSMakeRange(700, sdp.description.length-700)];
 
     NSDictionary *dataDict1 = @{
-        @"userID":@"com.lucanchen.offerer",
+        @"userID":self.userID,
         @"firstPart":sdpPart1
     };
     NSDictionary *dataDict2 = @{
-        @"userID":@"com.lucanchen.offerer",
+        @"userID":self.userID,
         @"firstPart":sdpPart2
     };
     
@@ -276,14 +216,19 @@ sessionDescription:sdp];
     NSData *data2 = [NSJSONSerialization dataWithJSONObject:dataDict2
         options:NSJSONWritingPrettyPrinted
         error:nil];
-    
-    NSString *dataStr1 = [[NSString alloc]initWithData:data1
-                                              encoding: NSUTF8StringEncoding];
-    
-    NSString *dataStr2 = [[NSString alloc]initWithData:data2
-                                              encoding: NSUTF8StringEncoding];
-//    [self.socket send:dataStr1];
-//    [self.socket send:dataStr2];
+//    
+//    NSString *dataStr1 = [[NSString alloc]initWithData:data1
+//                                              encoding: NSUTF8StringEncoding];
+//    
+//    NSString *dataStr2 = [[NSString alloc]initWithData:data2
+//                                              encoding: NSUTF8StringEncoding];
+    [self.client publish:data1 toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+        
+    }];
+    [self.client publish:data2 toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+        
+    }];
+    NSLog(@"==========sending two parts offer");
 }
 
 // Called when setting a local or remote description.
@@ -305,6 +250,38 @@ didSetSessionDescriptionWithError:(NSError *)error {
  @since 4.0
  */
 - (void)client:(PubNub *)client didReceiveMessage:(PNMessageResult *)message {
+    NSDictionary *msg = message.data.message;
+    if (![msg objectForKey:@"userID"]) {
+        NSLog(@"===============key userID is not present");
+        return;
+    }
+    NSString *userID = msg[@"userID"];
+    NSLog(@"==================received userID:%@", userID);
+    if (![userID  isEqual: self.other_userID]) {
+        NSLog(@"Ignoring this message, due to wrong userID: %@", userID);
+        return;
+    }
+    if ([msg objectForKey:@"participant"] && msg[@"participant"]) {
+        
+    }
+    if ([msg objectForKey:@"candidate"]) {
+        NSDictionary *cand = msg[@"candidate"];
+        RTCICECandidate *candidate = [[RTCICECandidate alloc] initWithMid:cand[@"sdpMid"] index:(long)cand[@"sdpMLineIndex"] sdp:cand[@"candidate"]];
+        [self.peerConnection addICECandidate:candidate];
+        NSLog(@"=====================added iceCandidate");
+    }
+    if ([msg objectForKey:@"fullPart"]) {
+        RTCSessionDescription *sdp = [[RTCSessionDescription alloc] initWithType:@"answer"
+                                                                     sdp:msg[@"fullPart"]];
+
+        [self.peerConnection setRemoteDescriptionWithDelegate:self sessionDescription:sdp];
+    }
+    if ([msg objectForKey:@"firstPart"]) {
+        
+    }
+    if ([msg objectForKey:@"secondPart"]) {
+    
+    }
     
     // Handle new message stored in message.data.message
     if (message.data.actualChannel) {
@@ -416,5 +393,69 @@ didSetSessionDescriptionWithError:(NSError *)error {
                                             otherButtonTitles:nil];
   [alertView show];
 }
+
+- (void)processPublishStatus:(PNPublishStatus *)status {
+    switch(status.category) {
+        case PNUnknownCategory:
+            NSLog(@"================1");
+            break;
+            case PNAcknowledgmentCategory:
+            NSLog(@"================2");
+            break;
+            
+            case PNAccessDeniedCategory:
+            NSLog(@"================3");
+            break;
+            
+            case PNTimeoutCategory:
+            NSLog(@"================4");
+            break;
+            
+            case PNNetworkIssuesCategory:
+            NSLog(@"================5");
+            break;
+            
+            case PNConnectedCategory:
+            NSLog(@"================6");
+            break;
+            
+            case PNReconnectedCategory:
+            NSLog(@"================7");
+            break;
+            
+            case PNDisconnectedCategory:
+            NSLog(@"================8");
+            break;
+            
+            case PNUnexpectedDisconnectCategory:
+            NSLog(@"================9");
+            break;
+            
+            case PNCancelledCategory:
+            NSLog(@"================10");
+            break;
+            
+            case PNBadRequestCategory:
+            NSLog(@"================11");
+            break;
+            
+            case PNMalformedResponseCategory:
+            NSLog(@"================12====description:%@", status.errorData);
+            break;
+            
+            case PNDecryptionErrorCategory:
+            NSLog(@"================13");
+            break;
+            
+            case PNTLSConnectionFailedCategory:
+            NSLog(@"================14");
+            break;
+            
+            case PNTLSUntrustedCertificateCategory:
+            NSLog(@"================15");
+            break;
+
+    }
+    }
 
 @end
