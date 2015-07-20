@@ -12,16 +12,21 @@
 #import "RTCPair.h"
 #import "RTCICECandidate.h"
 #import "RTCSessionDescription.h"
+#import <WebRTC/RTCDataChannel.h>
 
 #import <PubNub/PubNub.h>
 
-@interface JYWMainViewController () <JYWMainViewDelegate, RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener>
+@interface JYWMainViewController () <JYWMainViewDelegate, RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener, RTCDataChannelDelegate>
 
 @property(nonatomic, strong) NSString *userID;
 @property(nonatomic, strong) NSString *other_userID;
+@property(nonatomic, strong) NSString *firstPart;
+@property(nonatomic, strong) NSString *secondPart;
+@property(nonatomic, strong) NSMutableArray *messageQueue;
+@property(nonatomic) BOOL offer_answer_done;
 @property(nonatomic, strong) RTCPeerConnection *peerConnection;
 @property(nonatomic, strong) RTCPeerConnectionFactory *factory;
-@property(nonatomic, strong) NSMutableArray *messageQueue;
+@property(nonatomic, strong) RTCDataChannel *dataChannel;
 
 @property (nonatomic) PubNub *client;
 
@@ -34,6 +39,10 @@
     if (self = [super init]) {
         self.userID = @"com.lucanchen.offerer";
         self.other_userID = @"com.lucanchen.answerer";
+        self.messageQueue = [[NSMutableArray alloc] init];
+        self.offer_answer_done = NO;
+        self.dataChannel = nil;
+        
         PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37"
                                                                          subscribeKey:@"sub-c-3af2bc02-2b93-11e5-9bdb-0619f8945a4f"];
         self.client = [PubNub clientWithConfiguration:configuration];
@@ -45,20 +54,69 @@
 
         
         // Create peer connection.
-        NSArray *optionalConstraints = @[[[RTCPair alloc] initWithKey:@"DtlsSrtpKeyAgreement"
-                                                                value:@"true"]];
-        RTCMediaConstraints* constraints = [[RTCMediaConstraints alloc] initWithMandatoryConstraints:nil
-                                                                                 optionalConstraints:optionalConstraints];
+        NSURL *url1 = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
+        NSURL *url2 = [NSURL URLWithString:@"turn:turn.bistri.com:80"];
+        NSURL *url3 = [NSURL URLWithString:@"turn:turn.anyfirewall.com:443?transport=tcp"];
+        NSURL *url4 = [NSURL URLWithString:@"stun:stun.anyfirewall.com:3478"];
         
-        NSURL *defaultSTUNServerURL = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
-        RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:defaultSTUNServerURL
+        RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:url1
                                                          username:@""
                                                          password:@""];
-        NSArray *ice_servers = @[server1];
-        self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:constraints delegate:self];
-        RTCMediaConstraints * media_constraints = [[RTCMediaConstraints alloc] initWithMandatoryConstraints:@[] optionalConstraints:@[]];
+        RTCICEServer *server2 = [[RTCICEServer alloc] initWithURI:url2
+                                                         username:@"homeo"
+                                                         password:@"homeo"];
+        RTCICEServer *server3 = [[RTCICEServer alloc] initWithURI:url3
+                                                         username:@"webrtc"
+                                                         password:@"webrtc"];
+        RTCICEServer *server4 = [[RTCICEServer alloc] initWithURI:url4
+                                                         username:@""
+                                                         password:@""];
+
+        NSArray *ice_servers = @[server1, server2, server3, server4];
+        self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:nil delegate:self];
+        
+        
+        
+        
+        // createDataChannel
+        // protocol: 'text/chat', preset: true, stream: 16
+        // maxRetransmits:0 && ordered:false
+        RTCDataChannelInit *init = [[RTCDataChannelInit alloc] init];
+        init.protocol = @"text/chat";
+        init.streamId = 16;
+        init.maxRetransmits = 0;
+        init.isOrdered = NO;
+        //        self.dataChannel = [self.peerConnection createDataChannelWithLabel:@"sctp-channel" config:init];
+        self.dataChannel = [self.peerConnection createDataChannelWithLabel:@"" config:nil];
+        self.dataChannel.delegate = self;
+        NSLog(@"self.dataChannel, %@", self.dataChannel.label);
+        NSLog(@"self.dataChannel, %@", self.dataChannel.isReliable ? @"Yes" : @"No");
+        NSLog(@"self.dataChannel, %@", self.dataChannel.isOrdered ? @"Yes" : @"No");
+        NSLog(@"self.dataChannel, %ld", self.dataChannel.maxRetransmitTime);
+        NSLog(@"self.dataChannel, %ld", self.dataChannel.maxRetransmits);
+        NSLog(@"self.dataChannel, %@", self.dataChannel.protocol);
+        NSLog(@"self.dataChannel, %@", self.dataChannel.isNegotiated ? @"Yes" : @"No");
+        NSLog(@"self.dataChannel, %ld", self.dataChannel.streamId);
+        NSLog(@"self.dataChannel, %d", self.dataChannel.state);
+        NSLog(@"self.dataChannel, %ld", self.dataChannel.bufferedAmount);
+        
+        NSLog(@"================created DataChannel, state:%d", self.dataChannel.state);
+
+        
+        
+        
+        
+        
+        
+        NSArray *mandatoryConstraints = @[
+                                          [[RTCPair alloc] initWithKey:@"OfferToReceiveAudio" value:@"true"],
+                                          [[RTCPair alloc] initWithKey:@"OfferToReceiveVideo" value:@"false"]
+                                          ];
+        NSArray *optionalConstraints = @[[[RTCPair alloc] initWithKey:@"DtlsSrtpKeyAgreement"
+                                                                value:@"true"]];
+        RTCMediaConstraints* constraints = [[RTCMediaConstraints alloc] initWithMandatoryConstraints:mandatoryConstraints optionalConstraints:nil];
         [self.peerConnection createOfferWithDelegate:self
-                                         constraints:media_constraints];
+                                         constraints:constraints];
     }
     return self;
 }
@@ -118,41 +176,104 @@
 // Triggered when the SignalingState changed.
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
  signalingStateChanged:(RTCSignalingState)stateChanged {
-    
+    NSLog(@"peerConnection signalingStateChanged beginning");
+    switch (stateChanged) {
+        case RTCSignalingStable:
+            NSLog(@"peerConnection signalingStateChanged stable");
+            break;
+        case RTCSignalingHaveLocalOffer:
+            NSLog(@"peerConnection signalingStateChanged HavelLocalOffer");
+            break;
+        case RTCSignalingHaveLocalPrAnswer:
+            NSLog(@"peerConnection signalingStateChanged HavelLocalPrAnswer");
+            break;
+        case RTCSignalingHaveRemoteOffer:
+            NSLog(@"peerConnection signalingStateChanged HaveRemoteOffer");
+            break;
+        case RTCSignalingHaveRemotePrAnswer:
+            NSLog(@"peerConnection signalingStateChanged HaveRemotePrAnswer");
+            break;
+        case RTCSignalingClosed:
+            NSLog(@"peerConnection signalingStateChanged Closed");
+            break;
+        default:
+            break;
+    }
+
 }
 
 // Triggered when media is received on a new stream from remote peer.
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
            addedStream:(RTCMediaStream *)stream {
-    
+    NSLog(@"peerConnection addedStream, %u=======%u========%u", peerConnection.signalingState, peerConnection.iceConnectionState, peerConnection.iceGatheringState);
+    [peerConnection addStream:stream];
 }
 
 // Triggered when a remote peer close a stream.
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
          removedStream:(RTCMediaStream *)stream {
-    
+    NSLog(@"peerConnection removedStream, %u=======%u========%u", peerConnection.signalingState, peerConnection.iceConnectionState, peerConnection.iceGatheringState);
 }
 
 // Triggered when renegotiation is needed, for example the ICE has restarted.
 - (void)peerConnectionOnRenegotiationNeeded:(RTCPeerConnection *)peerConnection {
-    
+    NSLog(@"peerConnection peerConnectionOnRenegotiationNeeded, %u=======%u========%u", peerConnection.signalingState, peerConnection.iceConnectionState, peerConnection.iceGatheringState);
 }
 
 // Called any time the ICEConnectionState changes.
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
   iceConnectionChanged:(RTCICEConnectionState)newState {
-    
+    NSLog(@"peerConnection iceConnectionChanged");
+    switch (newState) {
+        case RTCICEConnectionNew:
+            NSLog(@"peerConnection iceConnectionChanged RTCICEConnectionNew");
+            break;
+        case RTCICEConnectionChecking:
+            NSLog(@"peerConnection iceConnectionChanged RTCICEConnectionChecking");
+            break;
+        case RTCICEConnectionConnected:
+            NSLog(@"peerConnection iceConnectionChanged RTCICEConnectionConnected");
+            break;
+        case RTCICEConnectionCompleted:
+            NSLog(@"peerConnection iceConnectionChanged RTCICEConnectionCompleted");
+            break;
+        case RTCICEConnectionFailed:
+            NSLog(@"peerConnection iceConnectionChanged RTCICEConnectionFailed");
+            break;
+        case RTCICEConnectionDisconnected:
+            NSLog(@"peerConnection iceConnectionChanged RTCICEConnectionDisconnected");
+            break;
+        case RTCICEConnectionClosed:
+            NSLog(@"peerConnection iceConnectionChanged RTCICEConnectionClosed");
+            break;
+        default:
+            break;
+    }
 }
 
 // Called any time the ICEGatheringState changes.
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
    iceGatheringChanged:(RTCICEGatheringState)newState {
-    
+    NSLog(@"peerConnection iceGatheringChanged");
+    switch (newState) {
+        case RTCICEGatheringNew:
+            NSLog(@"peerConnection iceGatheringChanged RTCICEGatheringNew");
+            break;
+        case RTCICEGatheringGathering:
+            NSLog(@"peerConnection iceGatheringChanged RTCICEGatheringGathering");
+            break;
+        case RTCICEGatheringComplete:
+            NSLog(@"peerConnection iceGatheringChanged RTCICEGatheringComplete");
+            break;
+        default:
+            break;
+    }
 }
 
 // New Ice candidate have been found.
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
        gotICECandidate:(RTCICECandidate *)candidate {
+    NSLog(@"peerConnection gotICECandidate");
     NSDictionary* dataDict = @{
         @"userID" : self.userID,
         @"candidate": @{
@@ -161,15 +282,23 @@
             @"candidate"     : candidate.sdp
         }
     };
-    [self.client publish:dataDict toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
-        [self processPublishStatus:status];
-    }];
-    NSLog(@"sending icecandidate");
+    NSLog(@"==============gotICECandidate, %@======%@========%@", dataDict[@"candidate"][@"sdpMid"], dataDict[@"candidate"][@"sdpMLineIndex"], dataDict[@"candidate"][@"candidate"]);
+    if (!self.offer_answer_done) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.messageQueue addObject:dataDict];
+        });
+    } else {
+        [self.client publish:dataDict toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+            [self processPublishStatus:status];
+        }];
+        NSLog(@"sending icecandidate");
+    }
 }
 
 // New data channel has been opened.
 - (void)peerConnection:(RTCPeerConnection*)peerConnection
     didOpenDataChannel:(RTCDataChannel*)dataChannel {
+    NSLog(@"peerConnection didOpenDataChannel");
 }
 
 #pragma mark - RTCSessionDescriptionDelegate
@@ -178,7 +307,7 @@
 - (void)peerConnection:(RTCPeerConnection *)peerConnection didCreateSessionDescription:(RTCSessionDescription *)sdp error:(NSError *)error {
     NSLog(@"===========================error.code: %ld", error.code);
     [peerConnection setLocalDescriptionWithDelegate:self sessionDescription:sdp];
-    if (sdp.description.length <= 700) {
+    if (sdp.description.length < 7000) {
         NSLog(@"==============================descrition less 700");
         
         NSDictionary *json = @{
@@ -196,9 +325,9 @@
         }];
         return;
     }
-    NSLog(@"==============================700 >>>> description");
-    NSString* sdpPart1 = [sdp.description substringWithRange:NSMakeRange(0, 700)];
-    NSString* sdpPart2 = [sdp.description substringWithRange:NSMakeRange(700, sdp.description.length-700)];
+    NSLog(@"==============================900 >>>> description, length %ld", sdp.description.length);
+    NSString* sdpPart1 = [sdp.description substringWithRange:NSMakeRange(0, 900)];
+    NSString* sdpPart2 = [sdp.description substringWithRange:NSMakeRange(900, sdp.description.length-900)];
 
     NSDictionary *dataDict1 = @{
         @"userID":self.userID,
@@ -206,26 +335,26 @@
     };
     NSDictionary *dataDict2 = @{
         @"userID":self.userID,
-        @"firstPart":sdpPart2
+        @"secondPart":sdpPart2
     };
     
-    NSData *data1 = [NSJSONSerialization dataWithJSONObject:dataDict1
-        options:NSJSONWritingPrettyPrinted
-        error:nil];
-    
-    NSData *data2 = [NSJSONSerialization dataWithJSONObject:dataDict2
-        options:NSJSONWritingPrettyPrinted
-        error:nil];
+//    NSData *data1 = [NSJSONSerialization dataWithJSONObject:dataDict1
+//        options:NSJSONWritingPrettyPrinted
+//        error:nil];
 //    
+//    NSData *data2 = [NSJSONSerialization dataWithJSONObject:dataDict2
+//        options:NSJSONWritingPrettyPrinted
+//        error:nil];
+//
 //    NSString *dataStr1 = [[NSString alloc]initWithData:data1
 //                                              encoding: NSUTF8StringEncoding];
 //    
 //    NSString *dataStr2 = [[NSString alloc]initWithData:data2
 //                                              encoding: NSUTF8StringEncoding];
-    [self.client publish:data1 toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+    [self.client publish:dataDict1 toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
         
     }];
-    [self.client publish:data2 toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+    [self.client publish:dataDict2 toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
         
     }];
     NSLog(@"==========sending two parts offer");
@@ -250,7 +379,9 @@ didSetSessionDescriptionWithError:(NSError *)error {
  @since 4.0
  */
 - (void)client:(PubNub *)client didReceiveMessage:(PNMessageResult *)message {
+    NSLog(@"=============PubNub didReceiveMessage 1");
     NSDictionary *msg = message.data.message;
+    NSLog(@"=============PubNub didReceiveMessage 2: %@", msg);
     if (![msg objectForKey:@"userID"]) {
         NSLog(@"===============key userID is not present");
         return;
@@ -266,21 +397,56 @@ didSetSessionDescriptionWithError:(NSError *)error {
     }
     if ([msg objectForKey:@"candidate"]) {
         NSDictionary *cand = msg[@"candidate"];
-        RTCICECandidate *candidate = [[RTCICECandidate alloc] initWithMid:cand[@"sdpMid"] index:(long)cand[@"sdpMLineIndex"] sdp:cand[@"candidate"]];
+        
+        NSString *mid = cand[@"sdpMid"];
+        NSString *sdp = cand[@"candidate"];
+        NSNumber *num = cand[@"sdpMLineIndex"];
+        NSInteger mLineIndex = [num integerValue];
+        NSLog(@"received ice candidate %@====%ld====%@", mid, mLineIndex, sdp);
+        RTCICECandidate *candidate = [[RTCICECandidate alloc] initWithMid:mid index:mLineIndex sdp:sdp];
+//        RTCICECandidate *candidate = [[RTCICECandidate alloc] initWithMid:cand[@"sdpMid"] index:(long)cand[@"sdpMLineIndex"] sdp:cand[@"candidate"]];
+        NSLog(@"created ice candidate: %@====%ld=====%@", candidate.sdpMid, candidate.sdpMLineIndex, candidate.sdp);
         [self.peerConnection addICECandidate:candidate];
         NSLog(@"=====================added iceCandidate");
     }
     if ([msg objectForKey:@"fullPart"]) {
-        RTCSessionDescription *sdp = [[RTCSessionDescription alloc] initWithType:@"answer"
-                                                                     sdp:msg[@"fullPart"]];
-
+        NSString *sdpStr = msg[@"fullPart"];
+        
+        NSError *jsonError;
+        NSData *objectData = [sdpStr dataUsingEncoding:NSUTF8StringEncoding];
+        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:objectData
+                                                             options:NSJSONReadingMutableContainers
+                                                               error:&jsonError];
+        if (jsonError) {
+            NSLog(@"data to dict error, code: %ld", jsonError.code);
+        } else {
+            NSLog(@"data to dict success, json[type]: %@", json[@"type"]);
+            NSLog(@"data to dict success, json[sdp]: %@",  json[@"sdp"]);
+        }
+        
+        RTCSessionDescription *sdp = [[RTCSessionDescription alloc] initWithType:json[@"type"]
+                                                                             sdp:json[@"sdp"]];
         [self.peerConnection setRemoteDescriptionWithDelegate:self sessionDescription:sdp];
+        self.offer_answer_done = YES;
+        NSLog(@"==================offer_answer_done==========");
+        
+        for (NSDictionary *dataDict in self.messageQueue) {
+            NSLog(@"===========sending each icecandidate");
+            [self.client publish:dataDict toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+                [self processPublishStatus:status];
+            }];
+        }
+        [self.messageQueue removeAllObjects];
     }
     if ([msg objectForKey:@"firstPart"]) {
-        
+        NSLog(@"==============received answer from firstPart");
+        self.firstPart = msg[@"firstPart"];
+        [self processAnswer];
     }
     if ([msg objectForKey:@"secondPart"]) {
-    
+        NSLog(@"==============received answer from secondPart");
+        self.secondPart = msg[@"secondPart"];
+        [self processAnswer];
     }
     
     // Handle new message stored in message.data.message
@@ -294,8 +460,6 @@ didSetSessionDescriptionWithError:(NSError *)error {
         // Message has been received on channel stored in
         // message.data.subscribedChannel
     }
-    NSLog(@"Received message: %@ on channel %@ at %@", message.data.message,
-          message.data.subscribedChannel, message.data.timetoken);
 }
 
 /**
@@ -309,7 +473,7 @@ didSetSessionDescriptionWithError:(NSError *)error {
  @since 4.0
  */
 - (void)client:(PubNub *)client didReceivePresenceEvent:(PNPresenceEventResult *)event {
-    
+    NSLog(@"=============PubNub didReceivePresenceEvent: %@", event.data.presenceEvent);
     // Handle presence event event.data.presenceEvent (one of: join, leave, timeout,
     // state-change).
     if (event.data.actualChannel) {
@@ -322,8 +486,6 @@ didSetSessionDescriptionWithError:(NSError *)error {
         // Presence event has been received on channel stored in
         // event.data.subscribedChannel
     }
-    NSLog(@"Did receive presence event: %@", event.data.presenceEvent);
-    
 }
 
 
@@ -342,6 +504,7 @@ didSetSessionDescriptionWithError:(NSError *)error {
  @since 4.0
  */
 - (void)client:(PubNub *)client didReceiveStatus:(PNSubscribeStatus *)status {
+    NSLog(@"=============PubNub didReceiveStatus");
     
     if (status.category == PNUnexpectedDisconnectCategory) {
         // This event happens when radio / connectivity is lost
@@ -382,6 +545,35 @@ didSetSessionDescriptionWithError:(NSError *)error {
         // encrypt messages and on live data feed it received plain text.
     }
 }
+
+#pragma mark - RTCDataChannelDelegate
+// Called when the data channel state has changed.
+- (void)channelDidChangeState:(RTCDataChannel*)channel {
+    NSLog(@"RTCDataChannel channelDidChangeState beginning");
+    switch (channel.state) {
+        case kRTCDataChannelStateConnecting:
+            NSLog(@"channelDidChangeState connecting");
+            break;
+        case kRTCDataChannelStateOpen:
+            NSLog(@"channelDidChangeState open");
+            break;
+        case kRTCDataChannelStateClosing:
+            NSLog(@"channelDidChangeState closing");
+            break;
+        case kRTCDataChannelStateClosed:
+            NSLog(@"channelDidChangeState closed");
+            break;
+        default:
+            break;
+    }
+}
+
+// Called when a data buffer was successfully received.
+- (void)channel:(RTCDataChannel*)channel
+didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
+    NSLog(@"RTCDataChannel didReceiveMessageWithBuffer");
+}
+
 
 #pragma mark - Private
 
@@ -458,4 +650,11 @@ didSetSessionDescriptionWithError:(NSError *)error {
     }
     }
 
+- (void) processAnswer {
+    if (self.firstPart && self.secondPart) {
+        
+    } else {
+        
+    }
+}
 @end
