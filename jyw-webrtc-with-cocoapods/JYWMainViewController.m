@@ -571,7 +571,8 @@ didSetSessionDescriptionWithError:(NSError *)error {
 // Called when a data buffer was successfully received.
 - (void)channel:(RTCDataChannel*)channel
 didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
-    NSLog(@"RTCDataChannel didReceiveMessageWithBuffer");
+    NSString* newStr = [[NSString alloc] initWithData:buffer.data encoding:NSUTF8StringEncoding];
+        NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: text: %@", newStr);
 }
 
 
