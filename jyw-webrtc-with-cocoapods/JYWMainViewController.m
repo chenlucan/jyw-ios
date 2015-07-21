@@ -16,7 +16,7 @@
 
 #import <PubNub/PubNub.h>
 
-@interface JYWMainViewController () <JYWMainViewDelegate, RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener, RTCDataChannelDelegate>
+@interface JYWMainViewController () <JYWMainViewDelegate, RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener, RTCDataChannelDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate>
 
 @property(nonatomic, strong) NSString *userID;
 @property(nonatomic, strong) NSString *other_userID;
@@ -27,6 +27,7 @@
 @property(nonatomic, strong) RTCPeerConnection *peerConnection;
 @property(nonatomic, strong) RTCPeerConnectionFactory *factory;
 @property(nonatomic, strong) RTCDataChannel *dataChannel;
+@property (nonatomic) UIImagePickerController *imagePickerController;
 
 @property (nonatomic) PubNub *client;
 
@@ -117,6 +118,8 @@
         RTCMediaConstraints* constraints = [[RTCMediaConstraints alloc] initWithMandatoryConstraints:mandatoryConstraints optionalConstraints:nil];
         [self.peerConnection createOfferWithDelegate:self
                                          constraints:constraints];
+        
+        self.imagePickerController = nil;
     }
     return self;
 }
@@ -165,8 +168,20 @@
 }
 
 - (void)start {
-    [self showAlertWithMessage:@"Received start request from JYWMainView"];
 
+    UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
+    
+    if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+    {
+        [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
+    } else {
+        [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+    }
+    
+    [imagePicker setDelegate:self];
+    
+    self.imagePickerController = imagePicker;
+    [self presentModalViewController:self.imagePickerController animated:YES];
 }
 
 - (void)stop {
@@ -572,9 +587,25 @@ didSetSessionDescriptionWithError:(NSError *)error {
 - (void)channel:(RTCDataChannel*)channel
 didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
     NSString* newStr = [[NSString alloc] initWithData:buffer.data encoding:NSUTF8StringEncoding];
-        NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: text: %@", newStr);
+    NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: text: %@", newStr);
 }
 
+#pragma mark - UIImagePickerControllerDelegate
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(NSDictionary *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0) {
+    
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    UIImage *image = [info valueForKey:UIImagePickerControllerOriginalImage];
+    NSLog(@"UIImagePickerControllerDelegate");
+    [self send:image];
+    [self dismissViewControllerAnimated:YES completion:NULL];
+    self.imagePickerController = nil;
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    
+}
 
 #pragma mark - Private
 
@@ -592,62 +623,62 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
         case PNUnknownCategory:
             NSLog(@"================1");
             break;
-            case PNAcknowledgmentCategory:
+        
+        case PNAcknowledgmentCategory:
             NSLog(@"================2");
             break;
             
-            case PNAccessDeniedCategory:
+        case PNAccessDeniedCategory:
             NSLog(@"================3");
             break;
             
-            case PNTimeoutCategory:
+        case PNTimeoutCategory:
             NSLog(@"================4");
             break;
             
-            case PNNetworkIssuesCategory:
+        case PNNetworkIssuesCategory:
             NSLog(@"================5");
             break;
             
-            case PNConnectedCategory:
+        case PNConnectedCategory:
             NSLog(@"================6");
             break;
             
-            case PNReconnectedCategory:
+        case PNReconnectedCategory:
             NSLog(@"================7");
             break;
             
-            case PNDisconnectedCategory:
+        case PNDisconnectedCategory:
             NSLog(@"================8");
             break;
             
-            case PNUnexpectedDisconnectCategory:
+        case PNUnexpectedDisconnectCategory:
             NSLog(@"================9");
             break;
             
-            case PNCancelledCategory:
+        case PNCancelledCategory:
             NSLog(@"================10");
             break;
             
-            case PNBadRequestCategory:
+        case PNBadRequestCategory:
             NSLog(@"================11");
             break;
             
-            case PNMalformedResponseCategory:
+        case PNMalformedResponseCategory:
             NSLog(@"================12====description:%@", status.errorData);
             break;
             
-            case PNDecryptionErrorCategory:
+        case PNDecryptionErrorCategory:
             NSLog(@"================13");
             break;
             
-            case PNTLSConnectionFailedCategory:
+        case PNTLSConnectionFailedCategory:
             NSLog(@"================14");
             break;
             
-            case PNTLSUntrustedCertificateCategory:
+        case PNTLSUntrustedCertificateCategory:
             NSLog(@"================15");
             break;
-
     }
     }
 
@@ -657,5 +688,72 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
     } else {
         
     }
+}
+
+- (void) send:(UIImage *)img {
+    NSData *imgData = UIImageJPEGRepresentation(img, 0.0);
+    
+    NSArray *pathArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+                                                           NSUserDomainMask,
+                                                           YES);
+    NSString *path = [[pathArr objectAtIndex:0]
+                      stringByAppendingPathComponent:@"img.data" ];
+    [imgData writeToFile:path atomically:YES];
+    NSLog(@"===================path is: %@", path);
+     NSData *retrievedData = [NSData dataWithContentsOfFile:path];
+    UIImageView *imgv = [[UIImageView alloc]
+                         initWithFrame:CGRectMake(100, 100, 200, 200)];
+    imgv.image = [UIImage imageWithData:retrievedData];
+    [self.view addSubview:imgv];
+    
+    
+    // max size we could send 66528 bytes
+    // 8 bytes - length - NSUInteger
+    // 1 byte  - type - currently only support '0 - File'
+    // so payload is 66528 - 9 = 66519
+    NSUInteger max = 66519;
+    NSUInteger len = imgData.length;
+    NSUInteger loop = len / max;
+    if (len % max) {
+        loop++;
+    }
+    NSLog(@"============loop:%ld======len:%ld=====max:%ld", loop, len, max);
+    for (NSUInteger i = 1; i <= loop; ++i) {
+        if (max * i < len) {
+            // send max bytes
+            NSData *package = [imgData subdataWithRange:NSMakeRange((i-1)*max, max)];
+            [self send:package type:0 totalLength:len];
+        } else {
+            // last package to send
+            NSData *package = [imgData subdataWithRange:NSMakeRange((i-1)*max, len - (i-1)*max)];
+            [self send:package type:0 totalLength:len];
+        }
+    }
+}
+
+- (void) send: (NSData *)payload type: (char)type totalLength: (NSUInteger)totalLength {
+    NSData *testData = [payload subdataWithRange:NSMakeRange(0, 2)];
+    const unsigned char *dataBuffer = (const unsigned char *)[testData bytes];
+    NSLog(@"==============first byte hex string: %ld====%ld",  (unsigned long)dataBuffer[0], (unsigned long)dataBuffer[1]);
+    
+    NSLog(@"=======payload length: %ld", payload.length);
+    
+    NSData *lenData = [NSData dataWithBytes:&totalLength length:sizeof(totalLength)];
+    NSLog(@"========sizeof NSUInteger: %ld", sizeof(totalLength));
+    NSLog(@"=======lenData length: %ld", lenData.length);
+    
+    NSData *typeData = [NSData dataWithBytes:&type length:sizeof(type)];
+    NSLog(@"========sizeof char: %ld", sizeof(type));
+    NSLog(@"=======typeData length: %ld", typeData.length);
+    
+    NSMutableData *payloadMutable = [lenData mutableCopy];
+    
+    [payloadMutable appendData:typeData];
+    [payloadMutable appendData:payload];
+    
+    NSLog(@"=======final size: %ld", payloadMutable.length);
+    
+    RTCDataBuffer *imgBuf = [[RTCDataBuffer alloc] initWithData:payloadMutable isBinary:YES];
+    [self.dataChannel sendData:imgBuf];
 }
 @end
