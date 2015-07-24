@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "872473D62C9EABF388D39E7F"
-               BuildableName = "libPods-jyw-webrtc-with-cocoapods-CocoaLumberjack.a"
-               BlueprintName = "Pods-jyw-webrtc-with-cocoapods-CocoaLumberjack"
+               BlueprintIdentifier = "1482EE10CF7321CFCDE50296"
+               BuildableName = "libPods-jyw-webrtc-with-cocoapods-QBImagePickerController.a"
+               BlueprintName = "Pods-jyw-webrtc-with-cocoapods-QBImagePickerController"
                ReferencedContainer = "container:Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>

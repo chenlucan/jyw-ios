@@ -36,6 +36,12 @@
 #define COCOAPODS_VERSION_MINOR_PubNub 0
 #define COCOAPODS_VERSION_PATCH_PubNub 2
 
+// QBImagePickerController
+#define COCOAPODS_POD_AVAILABLE_QBImagePickerController
+#define COCOAPODS_VERSION_MAJOR_QBImagePickerController 3
+#define COCOAPODS_VERSION_MINOR_QBImagePickerController 2
+#define COCOAPODS_VERSION_PATCH_QBImagePickerController 0
+
 // WebRTC
 #define COCOAPODS_POD_AVAILABLE_WebRTC
 #define COCOAPODS_VERSION_MAJOR_WebRTC 0

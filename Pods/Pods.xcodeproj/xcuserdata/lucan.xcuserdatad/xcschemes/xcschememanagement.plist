@@ -14,6 +14,16 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>Pods-jyw-webrtc-with-cocoapods-QBImagePickerController-QBImagePicker.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>Pods-jyw-webrtc-with-cocoapods-QBImagePickerController.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Pods-jyw-webrtc-with-cocoapods.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -22,17 +32,27 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>1ABF122E27E645697CD08867</key>
+		<key>1482EE10CF7321CFCDE50296</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>3C64D459627BF67DF737D5B1</key>
+		<key>2F951F83E7E3CDD8E0496138</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>85757B9112E35B25ACE1DD5B</key>
+		<key>872473D62C9EABF388D39E7F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>8D114C359F4A549C5AAECD05</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>DC29CF39BBC6F6F37E1305F8</key>
 		<dict>
 			<key>primary</key>
 			<true/>

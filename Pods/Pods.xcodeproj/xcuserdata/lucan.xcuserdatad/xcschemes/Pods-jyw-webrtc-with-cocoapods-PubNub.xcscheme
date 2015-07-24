@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3C64D459627BF67DF737D5B1"
+               BlueprintIdentifier = "DC29CF39BBC6F6F37E1305F8"
                BuildableName = "libPods-jyw-webrtc-with-cocoapods-PubNub.a"
                BlueprintName = "Pods-jyw-webrtc-with-cocoapods-PubNub"
                ReferencedContainer = "container:Pods.xcodeproj">
