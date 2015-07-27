@@ -104,22 +104,8 @@
         NSLog(@"self.dataChannel, %ld", self.dataChannel.bufferedAmount);
         
         NSLog(@"================created DataChannel, state:%d", self.dataChannel.state);
-
-        
-        
-        
-        
-        
-        
-        NSArray *mandatoryConstraints = @[
-                                          [[RTCPair alloc] initWithKey:@"OfferToReceiveAudio" value:@"true"],
-                                          [[RTCPair alloc] initWithKey:@"OfferToReceiveVideo" value:@"false"]
-                                          ];
-        NSArray *optionalConstraints = @[[[RTCPair alloc] initWithKey:@"DtlsSrtpKeyAgreement"
-                                                                value:@"true"]];
-        RTCMediaConstraints* constraints = [[RTCMediaConstraints alloc] initWithMandatoryConstraints:mandatoryConstraints optionalConstraints:nil];
         [self.peerConnection createOfferWithDelegate:self
-                                         constraints:constraints];
+                                         constraints:nil];
         
         self.pickController = nil;
     }
