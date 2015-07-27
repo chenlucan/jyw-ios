@@ -75,7 +75,7 @@
                                                          username:@""
                                                          password:@""];
 
-        NSArray *ice_servers = @[server1, server2, server3, server4];
+        NSArray *ice_servers = @[server1];
         self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:nil delegate:self];
         
         
