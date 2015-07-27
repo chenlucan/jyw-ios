@@ -18,7 +18,7 @@
 
 #import <QBImagePickerController/QBImagePickerController.h>
 
-@interface JYWMainViewController () <JYWMainViewDelegate, RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener, RTCDataChannelDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, QBImagePickerControllerDelegate>
+@interface JYWMainViewController () <JYWMainViewDelegate, RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener, RTCDataChannelDelegate, UINavigationControllerDelegate, QBImagePickerControllerDelegate>
 
 @property(nonatomic, strong) NSString *userID;
 @property(nonatomic, strong) NSString *other_userID;
@@ -29,7 +29,7 @@
 @property(nonatomic, strong) RTCPeerConnection *peerConnection;
 @property(nonatomic, strong) RTCPeerConnectionFactory *factory;
 @property(nonatomic, strong) RTCDataChannel *dataChannel;
-@property (nonatomic) UIImagePickerController *imagePickerController;
+@property (nonatomic, strong) QBImagePickerController *pickController;
 
 @property (nonatomic) PubNub *client;
 
@@ -121,7 +121,7 @@
         [self.peerConnection createOfferWithDelegate:self
                                          constraints:constraints];
         
-        self.imagePickerController = nil;
+        self.pickController = nil;
     }
     return self;
 }
@@ -170,20 +170,14 @@
 }
 
 - (void)start {
-
-    UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
+    QBImagePickerController *imagePickerController = [QBImagePickerController new];
+    imagePickerController.delegate = self;
+    imagePickerController.allowsMultipleSelection = YES;
+    imagePickerController.prompt = @"Select the photos you want to upload!";
+    imagePickerController.showsNumberOfSelectedAssets = YES;
     
-    if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
-    {
-        [imagePicker setSourceType:UIImagePickerControllerSourceTypeCamera];
-    } else {
-        [imagePicker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
-    }
-    
-    [imagePicker setDelegate:self];
-    
-    self.imagePickerController = imagePicker;
-    [self presentModalViewController:self.imagePickerController animated:YES];
+    self.pickController = imagePickerController;
+    [self presentViewController:self.pickController animated:YES completion:NULL];
 }
 
 - (void)stop {
@@ -592,25 +586,40 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
     NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: text: %@", newStr);
 }
 
-#pragma mark - UIImagePickerControllerDelegate
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(NSDictionary *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0) {
+#pragma mark - QBImagePickerControllerDelegate
+- (void)qb_imagePickerController:(QBImagePickerController *)imagePickerController didFinishPickingAssets:(NSArray *)assets {
+    PHImageManager *imgManager = [PHImageManager defaultManager];
+    for (PHAsset *asset in assets) {
+        // Do something with the asset
+        [imgManager requestImageDataForAsset:asset options:nil resultHandler:^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info) {
+            if ([info valueForKey:PHImageErrorKey] && info[PHImageErrorKey]) {
+                NSLog(@"requestImageDataForAsset PHImageErrorKey");
+                return;
+            }
+            NSLog(@"requestImageDataForAsset %ld", imageData.length);
+            [self sendData:imageData];
+        }];
+    }
     
-}
-
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
-    UIImage *image = [info valueForKey:UIImagePickerControllerOriginalImage];
-    NSLog(@"UIImagePickerControllerDelegate");
-    [self send:image];
     [self dismissViewControllerAnimated:YES completion:NULL];
-    self.imagePickerController = nil;
+}
+- (void)qb_imagePickerControllerDidCancel:(QBImagePickerController *)imagePickerController {
+    [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+- (BOOL)qb_imagePickerController:(QBImagePickerController *)imagePickerController shouldSelectAsset:(PHAsset *)asset {
+    return YES;
+}
+
+- (void)qb_imagePickerController:(QBImagePickerController *)imagePickerController didSelectAsset:(PHAsset *)asset {
     
 }
+- (void)qb_imagePickerController:(QBImagePickerController *)imagePickerController didDeselectAsset:(PHAsset *)asset {
+    
+}
+
 
 #pragma mark - Private
-
 - (void)showAlertWithMessage:(NSString*)message {
   UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:nil
                                                       message:message
@@ -692,23 +701,17 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
     }
 }
 
-- (void) send:(UIImage *)img {
-    NSData *imgData = UIImageJPEGRepresentation(img, 0.0);
+- (void) sendImg:(UIImage *)img {
+    NSData *imgData = UIImageJPEGRepresentation(img, 1.0);
     
-    NSArray *pathArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-                                                           NSUserDomainMask,
-                                                           YES);
-    NSString *path = [[pathArr objectAtIndex:0]
-                      stringByAppendingPathComponent:@"img.data" ];
-    [imgData writeToFile:path atomically:YES];
-    NSLog(@"===================path is: %@", path);
-     NSData *retrievedData = [NSData dataWithContentsOfFile:path];
-    UIImageView *imgv = [[UIImageView alloc]
-                         initWithFrame:CGRectMake(100, 100, 200, 200)];
-    imgv.image = [UIImage imageWithData:retrievedData];
+    UIImageView *imgv = [[UIImageView alloc] initWithFrame:CGRectMake(100, 100, 200, 200)];
+    imgv.image = img;
     [self.view addSubview:imgv];
     
-    
+    [self sendData:imgData];
+}
+
+- (void) sendData:(NSData *)imgData {
     // max size we could send 66528 bytes
     // 8 bytes - length - NSUInteger
     // 1 byte  - type - currently only support '0 - File'
