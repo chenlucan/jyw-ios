@@ -29,15 +29,57 @@
 @property(nonatomic, strong) RTCPeerConnection *peerConnection;
 @property(nonatomic, strong) RTCPeerConnectionFactory *factory;
 @property(nonatomic, strong) RTCDataChannel *dataChannel;
-@property (nonatomic, strong) QBImagePickerController *pickController;
-
-@property (nonatomic) PubNub *client;
+@property(nonatomic, strong) QBImagePickerController *pickController;
+@property(nonatomic) PubNub *client;
 
 @end
 
 @implementation JYWMainViewController {
 }
 
+- (instancetype) initWithId:(NSString *)uid {
+    if (self = [super init]) {
+        NSMutableString *offerer  = [NSMutableString stringWithString:@"com.lucanchen.offerer"];
+        NSMutableString *answerer = [NSMutableString stringWithString:@"com.lucanchen.answerer"];
+        [offerer appendString:uid];
+        [answerer appendString:uid];
+
+        self.userID = offerer;
+        self.other_userID = answerer;
+        self.messageQueue = [[NSMutableArray alloc] init];
+        self.offer_answer_done = NO;
+        self.dataChannel = nil;
+        
+        PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37"
+                                                                         subscribeKey:@"sub-c-3af2bc02-2b93-11e5-9bdb-0619f8945a4f"];
+        self.client = [PubNub clientWithConfiguration:configuration];
+        [self.client addListener:self];
+        [self.client subscribeToChannels:@[@"webrtc-app"] withPresence:YES];
+        
+        self.factory = [[RTCPeerConnectionFactory alloc] init];
+        
+        
+        // valid STUN/TURN servers.
+        // NSURL *url2 = [NSURL URLWithString:@"turn:turn.bistri.com:80"];
+        // NSURL *url3 = [NSURL URLWithString:@"turn:turn.anyfirewall.com:443?transport=tcp"];
+        // NSURL *url4 = [NSURL URLWithString:@"stun:stun.anyfirewall.com:3478"];
+        // RTCICEServer *server2 = [[RTCICEServer alloc] initWithURI:url2 username:@"homeo" password:@"homeo"];
+        // RTCICEServer *server3 = [[RTCICEServer alloc] initWithURI:url3 username:@"webrtc" password:@"webrtc"];
+        // RTCICEServer *server4 = [[RTCICEServer alloc] initWithURI:url4 username:@"" password:@""];
+        NSURL *url1 = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
+        RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:url1 username:@"" password:@""];
+        NSArray *ice_servers = @[server1];
+        self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:nil delegate:self];
+        
+        // createDataChannel
+        self.dataChannel = [self.peerConnection createDataChannelWithLabel:@"" config:nil];
+        self.dataChannel.delegate = self;
+        [self.peerConnection createOfferWithDelegate:self constraints:nil];
+        
+        self.pickController = nil;
+    }
+    return self;
+}
 - (instancetype)init {
     if (self = [super init]) {
         self.userID = @"com.lucanchen.offerer";
@@ -52,44 +94,15 @@
         [self.client addListener:self];
         [self.client subscribeToChannels:@[@"webrtc-app"] withPresence:YES];
         
-        [RTCPeerConnectionFactory initializeSSL];
         self.factory = [[RTCPeerConnectionFactory alloc] init];
-
         
         // Create peer connection.
         NSURL *url1 = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
-        NSURL *url2 = [NSURL URLWithString:@"turn:turn.bistri.com:80"];
-        NSURL *url3 = [NSURL URLWithString:@"turn:turn.anyfirewall.com:443?transport=tcp"];
-        NSURL *url4 = [NSURL URLWithString:@"stun:stun.anyfirewall.com:3478"];
-        
-        RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:url1
-                                                         username:@""
-                                                         password:@""];
-        RTCICEServer *server2 = [[RTCICEServer alloc] initWithURI:url2
-                                                         username:@"homeo"
-                                                         password:@"homeo"];
-        RTCICEServer *server3 = [[RTCICEServer alloc] initWithURI:url3
-                                                         username:@"webrtc"
-                                                         password:@"webrtc"];
-        RTCICEServer *server4 = [[RTCICEServer alloc] initWithURI:url4
-                                                         username:@""
-                                                         password:@""];
-
-        NSArray *ice_servers = @[server1];
-        self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:nil delegate:self];
-        
-        
-        
+        RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:url1 username:@"" password:@""];
+        NSArray *ice_servers  = @[server1];
+        self.peerConnection   = [self.factory peerConnectionWithICEServers:ice_servers constraints:nil delegate:self];
         
         // createDataChannel
-        // protocol: 'text/chat', preset: true, stream: 16
-        // maxRetransmits:0 && ordered:false
-        RTCDataChannelInit *init = [[RTCDataChannelInit alloc] init];
-        init.protocol = @"text/chat";
-        init.streamId = 16;
-        init.maxRetransmits = 0;
-        init.isOrdered = NO;
-        //        self.dataChannel = [self.peerConnection createDataChannelWithLabel:@"sctp-channel" config:init];
         self.dataChannel = [self.peerConnection createDataChannelWithLabel:@"" config:nil];
         self.dataChannel.delegate = self;
         NSLog(@"self.dataChannel, %@", self.dataChannel.label);
@@ -104,9 +117,7 @@
         NSLog(@"self.dataChannel, %ld", self.dataChannel.bufferedAmount);
         
         NSLog(@"================created DataChannel, state:%d", self.dataChannel.state);
-        [self.peerConnection createOfferWithDelegate:self
-                                         constraints:nil];
-        
+        [self.peerConnection createOfferWithDelegate:self constraints:nil];
         self.pickController = nil;
     }
     return self;
