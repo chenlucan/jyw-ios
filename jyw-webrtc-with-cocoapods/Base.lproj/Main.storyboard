@@ -28,7 +28,7 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
-                    <tabBarItem key="tabBarItem" systemItem="mostViewed" id="vIf-LK-mxc"/>
+                    <tabBarItem key="tabBarItem" title="" systemItem="favorites" id="vIf-LK-mxc"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aa2-mE-90M" sceneMemberID="firstResponder"/>
             </objects>
