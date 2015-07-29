@@ -16,27 +16,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" text="First View" textAlignment="center" lineBreakMode="tailTruncation" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="gg8-VL-TbA">
-                                <rect key="frame" x="221" y="279" width="157.5" height="41.5"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="36"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loaded by FirstViewController" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Iwo-Ub-VdS">
-                                <rect key="frame" x="203" y="329" width="194.5" height="17"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MMC-PF-5rh">
+                                <rect key="frame" x="277" y="285" width="50" height="30"/>
+                                <state key="normal" title="Upload">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="onUpload:" destination="5Nr-dO-QLC" eventType="touchUpInside" id="QPS-tN-SZf"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                        <constraints>
-                            <constraint firstItem="Iwo-Ub-VdS" firstAttribute="centerX" secondItem="gg8-VL-TbA" secondAttribute="centerX" id="ZYF-Yj-PkP"/>
-                            <constraint firstAttribute="centerX" secondItem="gg8-VL-TbA" secondAttribute="centerX" id="o67-ft-JFG"/>
-                            <constraint firstItem="Iwo-Ub-VdS" firstAttribute="top" secondItem="gg8-VL-TbA" secondAttribute="bottom" constant="8" symbolic="YES" id="qmN-TT-H7O"/>
-                            <constraint firstAttribute="centerY" secondItem="gg8-VL-TbA" secondAttribute="centerY" id="uI9-9A-uEL"/>
-                        </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" systemItem="mostViewed" id="vIf-LK-mxc"/>
                 </viewController>

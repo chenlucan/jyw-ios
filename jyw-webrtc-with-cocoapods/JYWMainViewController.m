@@ -35,6 +35,14 @@
 @implementation JYWMainViewController {
 }
 
+- (id)initWithCoder:(NSCoder *)decoder {
+    self = [super initWithCoder:decoder];
+    if (self) {
+        [self initCommon];
+    }
+    return self;
+}
+
 - (instancetype) initWithId:(NSString *)uid {
     if (self = [super init]) {
         NSMutableString *offerer  = [NSMutableString stringWithString:@"com.lucanchen.offerer"];
@@ -78,9 +86,8 @@
     }
     return self;
 }
-- (instancetype)init {
-    if (self = [super init]) {
-        self.userID = @"com.lucanchen.offerer";
+- (void)initCommon {
+    self.userID = @"com.lucanchen.offerer";
         self.other_userID = @"com.lucanchen.answerer";
         self.messageQueue = [[NSMutableArray alloc] init];
         self.offer_answer_done = NO;
@@ -117,16 +124,13 @@
         NSLog(@"================created DataChannel, state:%d", self.dataChannel.state);
         [self.peerConnection createOfferWithDelegate:self constraints:nil];
         self.pickController = nil;
-    }
-    return self;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
   // Terminate any calls when we aren't active.
   [self dismissViewControllerAnimated:NO completion:nil];
 }
-
-- (void)start {
+- (IBAction)onUpload:(id)sender {
     QBImagePickerController *imagePickerController = [QBImagePickerController new];
     imagePickerController.delegate = self;
     imagePickerController.allowsMultipleSelection = YES;
