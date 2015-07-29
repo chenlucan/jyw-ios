@@ -20,10 +20,10 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [RTCPeerConnectionFactory initializeSSL];
-    _window =  [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    [_window makeKeyAndVisible];
-    JYWMainViewController *viewController = [[JYWMainViewController alloc] init];
-    _window.rootViewController = viewController;
+//    _window =  [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+//    [_window makeKeyAndVisible];
+//    JYWMainViewController *viewController = [[JYWMainViewController alloc] init];
+//    _window.rootViewController = viewController;
     return YES;
 }
 

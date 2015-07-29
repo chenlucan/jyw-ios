@@ -22,6 +22,7 @@
 		51C1D1811B56D85800B85ECC /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51C1D1801B56D85800B85ECC /* CFNetwork.framework */; };
 		51C1D1831B56D86100B85ECC /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51C1D1821B56D86100B85ECC /* Security.framework */; };
 		51C1D1851B56D86A00B85ECC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51C1D1841B56D86A00B85ECC /* Foundation.framework */; };
+		51FE81B01B69049300BD358A /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 51FE81AF1B69049300BD358A /* SecondViewController.m */; };
 		F834C6F5B98D0652F7E91A7C /* libPods-jyw-webrtc-with-cocoapods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A28850981ADEF97396ADA1D4 /* libPods-jyw-webrtc-with-cocoapods.a */; };
 /* End PBXBuildFile section */
 
@@ -62,6 +63,8 @@
 		51C1D1801B56D85800B85ECC /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		51C1D1821B56D86100B85ECC /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		51C1D1841B56D86A00B85ECC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		51FE81AE1B69049300BD358A /* SecondViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SecondViewController.h; sourceTree = "<group>"; };
+		51FE81AF1B69049300BD358A /* SecondViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
 		6079BB582E8FCDDC4B695FD7 /* Pods-jyw-webrtc-with-cocoapods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-jyw-webrtc-with-cocoapods.debug.xcconfig"; path = "Pods/Target Support Files/Pods-jyw-webrtc-with-cocoapods/Pods-jyw-webrtc-with-cocoapods.debug.xcconfig"; sourceTree = "<group>"; };
 		8948634D5039DC5FEF2E164E /* Pods-jyw-webrtc-with-cocoapods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-jyw-webrtc-with-cocoapods.release.xcconfig"; path = "Pods/Target Support Files/Pods-jyw-webrtc-with-cocoapods/Pods-jyw-webrtc-with-cocoapods.release.xcconfig"; sourceTree = "<group>"; };
 		A28850981ADEF97396ADA1D4 /* libPods-jyw-webrtc-with-cocoapods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-jyw-webrtc-with-cocoapods.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -124,6 +127,8 @@
 				512885B01B56D27200A48470 /* AppDelegate.m */,
 				512885B21B56D27200A48470 /* ViewController.h */,
 				512885B31B56D27200A48470 /* ViewController.m */,
+				51FE81AE1B69049300BD358A /* SecondViewController.h */,
+				51FE81AF1B69049300BD358A /* SecondViewController.m */,
 				512885B51B56D27200A48470 /* Main.storyboard */,
 				512885B81B56D27200A48470 /* Images.xcassets */,
 				512885BA1B56D27200A48470 /* LaunchScreen.xib */,
@@ -328,6 +333,7 @@
 				51C1D1751B56D62100B85ECC /* JYWMainViewController.m in Sources */,
 				512885B11B56D27200A48470 /* AppDelegate.m in Sources */,
 				51C1D1741B56D62100B85ECC /* JYWMainView.m in Sources */,
+				51FE81B01B69049300BD358A /* SecondViewController.m in Sources */,
 				51C1D17D1B56D7E800B85ECC /* SRWebSocket.m in Sources */,
 				51C1D1781B56D78E00B85ECC /* UIImage+ARDUtilities.m in Sources */,
 				512885AE1B56D27200A48470 /* main.m in Sources */,
