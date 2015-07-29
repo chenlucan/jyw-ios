@@ -594,7 +594,11 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
                 return;
             }
             NSLog(@"requestImageDataForAsset %ld", imageData.length);
-            [self sendData:imageData];
+            NSString *cDateTime = [[asset.creationDate description]substringToIndex:19];
+            [self sendData:imageData name:cDateTime];
+            NSLog(@"=============image creationDate %@", cDateTime);
+            NSData *cdata = [cDateTime dataUsingEncoding:NSUTF8StringEncoding];
+            NSLog(@"===============NSStrig length %ld=========NSData length %ld", cDateTime.length, cdata.length);
         }];
     }
     
@@ -698,22 +702,33 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
     }
 }
 
-- (void) sendImg:(UIImage *)img {
-    NSData *imgData = UIImageJPEGRepresentation(img, 1.0);
-    
-    UIImageView *imgv = [[UIImageView alloc] initWithFrame:CGRectMake(100, 100, 200, 200)];
-    imgv.image = img;
-    [self.view addSubview:imgv];
-    
-    [self sendData:imgData];
-}
+//- (void) sendImg:(UIImage *)img {
+//    NSData *imgData = UIImageJPEGRepresentation(img, 1.0);
+//    
+//    UIImageView *imgv = [[UIImageView alloc] initWithFrame:CGRectMake(100, 100, 200, 200)];
+//    imgv.image = img;
+//    [self.view addSubview:imgv];
+//    
+//    [self sendData:imgData];
+//}
 
-- (void) sendData:(NSData *)imgData {
+- (void) sendData:(NSData *)imgData name:(NSString *)name {
     // max size we could send 66528 bytes
-    // 8 bytes - length - NSUInteger
-    // 1 byte  - type - currently only support '0 - File'
-    // so payload is 66528 - 9 = 66519
-    NSUInteger max = 66519;
+    // 8 bytes  - length - NSUInteger
+    // 1 byte   - type - currently only support '0 - File'
+    // 19 bytes - name/creationDate
+    // (TODO) seqNo?, can we increase the max size?
+    // so payload is 66528 - 9 - 19 = 66500
+    NSUInteger max = 66500;
+    
+    NSMutableString * name19 = [name mutableCopy];
+    if (name.length > 19) {
+        name19 = [[name19 substringToIndex:19] mutableCopy];
+    } else if (name.length < 19) {
+        [name19 appendString:@"0000000000000000000"];
+        name19 = [[name19 substringToIndex:19] mutableCopy];
+    }
+    
     NSUInteger len = imgData.length;
     NSUInteger loop = len / max;
     if (len % max) {
@@ -724,20 +739,22 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
         if (max * i < len) {
             // send max bytes
             NSData *package = [imgData subdataWithRange:NSMakeRange((i-1)*max, max)];
-            [self send:package type:0 totalLength:len];
+            [self send:package type:0 totalLength:len name:name19];
         } else {
             // last package to send
             NSData *package = [imgData subdataWithRange:NSMakeRange((i-1)*max, len - (i-1)*max)];
-            [self send:package type:0 totalLength:len];
+            [self send:package type:0 totalLength:len name:name19];
         }
     }
 }
 
-- (void) send: (NSData *)payload type: (char)type totalLength: (NSUInteger)totalLength {
-    NSData *testData = [payload subdataWithRange:NSMakeRange(0, 2)];
-    const unsigned char *dataBuffer = (const unsigned char *)[testData bytes];
-    NSLog(@"==============first byte hex string: %ld====%ld",  (unsigned long)dataBuffer[0], (unsigned long)dataBuffer[1]);
-    
+- (void) send: (NSData *)payload type: (char)type totalLength: (NSUInteger)totalLength name:(NSString *)name {
+    if (name.length != 19) {
+        NSLog(@"name length has to be 19!");
+        return;
+    }
+    // data: totalLength|type|name|payload
+    // name.length has to be 19, otherwise substring or append '0'
     NSLog(@"=======payload length: %ld", payload.length);
     
     NSData *lenData = [NSData dataWithBytes:&totalLength length:sizeof(totalLength)];
@@ -748,9 +765,13 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
     NSLog(@"========sizeof char: %ld", sizeof(type));
     NSLog(@"=======typeData length: %ld", typeData.length);
     
+    NSData *nameData = [name dataUsingEncoding:NSUTF8StringEncoding];
+    NSLog(@"=======nameData length: %ld", nameData.length);
+    
     NSMutableData *payloadMutable = [lenData mutableCopy];
     
     [payloadMutable appendData:typeData];
+    [payloadMutable appendData:nameData];
     [payloadMutable appendData:payload];
     
     NSLog(@"=======final size: %ld", payloadMutable.length);
