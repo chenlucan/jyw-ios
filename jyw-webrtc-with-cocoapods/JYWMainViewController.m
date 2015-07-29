@@ -1,8 +1,6 @@
 
 #import "JYWMainViewController.h"
 
-#import "JYWMainView.h"
-
 #import <WebRTC/RTCDataChannel.h>
 #import <WebRTC/RTCICECandidate.h>
 #import <WebRTC/RTCICEServer.h>
@@ -18,7 +16,7 @@
 
 #import <QBImagePickerController/QBImagePickerController.h>
 
-@interface JYWMainViewController () <JYWMainViewDelegate, RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener, RTCDataChannelDelegate, UINavigationControllerDelegate, QBImagePickerControllerDelegate>
+@interface JYWMainViewController () <RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener, RTCDataChannelDelegate, UINavigationControllerDelegate, QBImagePickerControllerDelegate>
 
 @property(nonatomic, strong) NSString *userID;
 @property(nonatomic, strong) NSString *other_userID;
@@ -123,47 +121,9 @@
     return self;
 }
 
-- (void)loadView {
-  JYWMainView *mainView = [[JYWMainView alloc] initWithFrame:CGRectZero];
-  mainView.delegate = self;
-  self.view = mainView;
-}
-
 - (void)applicationWillResignActive:(UIApplication *)application {
   // Terminate any calls when we aren't active.
   [self dismissViewControllerAnimated:NO completion:nil];
-}
-
-#pragma mark - JYWMainViewDelegate
-
-- (void)mainView:(JYWMainView *)mainView didInputRoom:(NSString *)room {
-  if (!room.length) {
-    return;
-  }
-  // Trim whitespaces.
-  NSCharacterSet *whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
-  NSString *trimmedRoom = [room stringByTrimmingCharactersInSet:whitespaceSet];
-
-  // Check that room name is valid.
-  NSError *error = nil;
-  NSRegularExpressionOptions options = NSRegularExpressionCaseInsensitive;
-  NSRegularExpression *regex =
-      [NSRegularExpression regularExpressionWithPattern:@"\\w+"
-                                                options:options
-                                                  error:&error];
-  if (error) {
-    [self showAlertWithMessage:error.localizedDescription];
-    return;
-  }
-  NSRange matchRange =
-      [regex rangeOfFirstMatchInString:trimmedRoom
-                               options:0
-                                 range:NSMakeRange(0, trimmedRoom.length)];
-  if (matchRange.location == NSNotFound ||
-      matchRange.length != trimmedRoom.length) {
-    [self showAlertWithMessage:@"Invalid room name."];
-    return;
-  }
 }
 
 - (void)start {
@@ -175,9 +135,6 @@
     
     self.pickController = imagePickerController;
     [self presentViewController:self.pickController animated:YES completion:NULL];
-}
-
-- (void)stop {
 }
 
 #pragma mark - RTCPeerConnectionDelegate
