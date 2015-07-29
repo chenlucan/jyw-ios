@@ -595,10 +595,9 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
             }
             NSLog(@"requestImageDataForAsset %ld", imageData.length);
             NSString *cDateTime = [[asset.creationDate description]substringToIndex:19];
-            [self sendData:imageData name:cDateTime];
-            NSLog(@"=============image creationDate %@", cDateTime);
-            NSData *cdata = [cDateTime dataUsingEncoding:NSUTF8StringEncoding];
-            NSLog(@"===============NSStrig length %ld=========NSData length %ld", cDateTime.length, cdata.length);
+            NSString * cDateTimeNoSpace = [cDateTime stringByReplacingOccurrencesOfString:@" " withString:@"-"];
+
+            [self sendData:imageData name:cDateTimeNoSpace];
         }];
     }
     
