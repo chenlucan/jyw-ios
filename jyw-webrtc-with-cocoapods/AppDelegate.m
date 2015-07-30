@@ -11,6 +11,9 @@
 
 #import "RTCPeerConnectionFactory.h"
 
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import <FBSDKLoginKit/FBSDKLoginKit.h>
+
 @interface AppDelegate ()
 
 @end
@@ -19,12 +22,17 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [FBSDKLoginButton class];
+    
+    // This loads FBSDKLoginButton before the view displays
     [RTCPeerConnectionFactory initializeSSL];
+    
 //    _window =  [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 //    [_window makeKeyAndVisible];
 //    JYWMainViewController *viewController = [[JYWMainViewController alloc] init];
 //    _window.rootViewController = viewController;
-    return YES;
+    return [[FBSDKApplicationDelegate sharedInstance] application:application
+                                               didFinishLaunchingWithOptions:launchOptions];;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -43,11 +51,22 @@
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    [FBSDKAppEvents activateApp];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     [RTCPeerConnectionFactory deinitializeSSL];
+}
+
+- (BOOL)application:(UIApplication *)application
+            openURL:(NSURL *)url
+  sourceApplication:(NSString *)sourceApplication
+         annotation:(id)annotation {
+    return [[FBSDKApplicationDelegate sharedInstance] application:application
+                                                          openURL:url
+                                                sourceApplication:sourceApplication
+                                                       annotation:annotation];
 }
 
 @end

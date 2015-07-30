@@ -1,4 +1,7 @@
 
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import <FBSDKLoginKit/FBSDKLoginKit.h>
+
 #import "JYWMainViewController.h"
 
 #import <WebRTC/RTCDataChannel.h>
@@ -17,6 +20,7 @@
 #import <QBImagePickerController/QBImagePickerController.h>
 
 @interface JYWMainViewController () <RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener, RTCDataChannelDelegate, UINavigationControllerDelegate, QBImagePickerControllerDelegate>
+@property (weak, nonatomic) IBOutlet UIButton *btnUpload;
 
 @property(nonatomic, strong) NSString *userID;
 @property(nonatomic, strong) NSString *other_userID;
@@ -38,55 +42,71 @@
 - (id)initWithCoder:(NSCoder *)decoder {
     self = [super initWithCoder:decoder];
     if (self) {
-        [self initCommon];
+        if ([FBSDKAccessToken currentAccessToken]) {
+            NSString *uID = [FBSDKProfile currentProfile].userID;
+            NSLog(@"already loggedin, userID is:%@", uID);
+            if (uID) {
+               [self initWithId:uID];
+            }
+        } else {
+            NSLog(@"not loggedin yet");
+            self.btnUpload.enabled = NO;
+            [self.btnUpload setTitle:@"Please login first" forState:UIControlStateDisabled];
+        }
     }
+    [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(FBSDKProfileChanged:)
+                                                 name:FBSDKProfileDidChangeNotification object:nil];
     return self;
 }
 
-- (instancetype) initWithId:(NSString *)uid {
-    if (self = [super init]) {
-        NSMutableString *offerer  = [NSMutableString stringWithString:@"com.lucanchen.offerer"];
-        NSMutableString *answerer = [NSMutableString stringWithString:@"com.lucanchen.answerer"];
-        [offerer appendString:uid];
-        [answerer appendString:uid];
+- (void) initWithId:(NSString *)uid {
+    if (self.peerConnection) {
+        NSLog(@"already have RTCPeerConnection, return");
+        return;
+    }
+    NSLog(@"initWithId: uid:%@", uid);
+    NSMutableString *offerer  = [NSMutableString stringWithString:@"com.lucanchen.offerer."];
+    NSMutableString *answerer = [NSMutableString stringWithString:@"com.lucanchen.answerer."];
+    [offerer appendString:uid];
+    [answerer appendString:uid];
 
-        self.userID = offerer;
-        self.other_userID = answerer;
-        self.messageQueue = [[NSMutableArray alloc] init];
-        self.offer_answer_done = NO;
-        self.dataChannel = nil;
+    self.userID = offerer;
+    self.other_userID = answerer;
+    self.messageQueue = [[NSMutableArray alloc] init];
+    self.offer_answer_done = NO;
+    self.dataChannel = nil;
         
-        PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37"
+    PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37"
                                                                          subscribeKey:@"sub-c-3af2bc02-2b93-11e5-9bdb-0619f8945a4f"];
-        self.client = [PubNub clientWithConfiguration:configuration];
-        [self.client addListener:self];
-        [self.client subscribeToChannels:@[@"webrtc-app"] withPresence:YES];
+    self.client = [PubNub clientWithConfiguration:configuration];
+    [self.client addListener:self];
+    [self.client subscribeToChannels:@[@"webrtc-app"] withPresence:YES];
         
-        self.factory = [[RTCPeerConnectionFactory alloc] init];
+    self.factory = [[RTCPeerConnectionFactory alloc] init];
         
         
-        // valid STUN/TURN servers.
-        // NSURL *url2 = [NSURL URLWithString:@"turn:turn.bistri.com:80"];
-        // NSURL *url3 = [NSURL URLWithString:@"turn:turn.anyfirewall.com:443?transport=tcp"];
-        // NSURL *url4 = [NSURL URLWithString:@"stun:stun.anyfirewall.com:3478"];
-        // RTCICEServer *server2 = [[RTCICEServer alloc] initWithURI:url2 username:@"homeo" password:@"homeo"];
-        // RTCICEServer *server3 = [[RTCICEServer alloc] initWithURI:url3 username:@"webrtc" password:@"webrtc"];
-        // RTCICEServer *server4 = [[RTCICEServer alloc] initWithURI:url4 username:@"" password:@""];
-        NSURL *url1 = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
-        RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:url1 username:@"" password:@""];
-        NSArray *ice_servers = @[server1];
-        self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:nil delegate:self];
+    // valid STUN/TURN servers.
+    // NSURL *url2 = [NSURL URLWithString:@"turn:turn.bistri.com:80"];
+    // NSURL *url3 = [NSURL URLWithString:@"turn:turn.anyfirewall.com:443?transport=tcp"];
+    // NSURL *url4 = [NSURL URLWithString:@"stun:stun.anyfirewall.com:3478"];
+    // RTCICEServer *server2 = [[RTCICEServer alloc] initWithURI:url2 username:@"homeo" password:@"homeo"];
+    // RTCICEServer *server3 = [[RTCICEServer alloc] initWithURI:url3 username:@"webrtc" password:@"webrtc"];
+    // RTCICEServer *server4 = [[RTCICEServer alloc] initWithURI:url4 username:@"" password:@""];
+    NSURL *url1 = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
+    RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:url1 username:@"" password:@""];
+    NSArray *ice_servers = @[server1];
+    self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:nil delegate:self];
         
-        // createDataChannel
-        self.dataChannel = [self.peerConnection createDataChannelWithLabel:@"" config:nil];
-        self.dataChannel.delegate = self;
-        [self.peerConnection createOfferWithDelegate:self constraints:nil];
+    // createDataChannel
+    self.dataChannel = [self.peerConnection createDataChannelWithLabel:@"" config:nil];
+    self.dataChannel.delegate = self;
+    [self.peerConnection createOfferWithDelegate:self constraints:nil];
         
-        self.pickController = nil;
-    }
-    return self;
+    self.pickController = nil;
 }
-- (void)initCommon {
+- (void)initCommonWithUserID:(NSString *)uid {
     self.userID = @"com.lucanchen.offerer";
         self.other_userID = @"com.lucanchen.answerer";
         self.messageQueue = [[NSMutableArray alloc] init];
@@ -124,6 +144,56 @@
         NSLog(@"================created DataChannel, state:%d", self.dataChannel.state);
         [self.peerConnection createOfferWithDelegate:self constraints:nil];
         self.pickController = nil;
+}
+
+- (void)FBSDKProfileChanged:(NSNotification *)notification {
+    // Retrieve information about the document and update the panel.
+    if ([FBSDKAccessToken currentAccessToken]) {
+        FBSDKProfile *profile = [FBSDKProfile currentProfile];
+        if (!profile) {
+            NSLog(@"FBSDKProfile is nil");
+            return;
+        }
+        NSLog(@"2==========userID: %@", profile.userID);
+        NSLog(@"2==========name: %@", profile.name);
+        NSLog(@"2==========linkURL: %@", profile.linkURL);
+        
+        self.btnUpload.enabled = YES;
+        [self.btnUpload setTitle:@"Upload" forState:UIControlStateNormal];
+        [self initWithId:profile.userID];
+    } else {
+        self.btnUpload.enabled = NO;
+        [self.btnUpload setTitle:@"Please login first" forState:UIControlStateDisabled];
+    }
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    NSLog(@"first viewWillAppear");
+    if ([FBSDKAccessToken currentAccessToken]) {
+        FBSDKProfile *profile = [FBSDKProfile currentProfile];
+        if (!profile) {
+            NSLog(@"FBSDKProfile is nil");
+            return;
+        }
+        NSLog(@"1==========userID: %@", profile.userID);
+        NSLog(@"1==========name: %@", profile.name);
+        NSLog(@"1==========linkURL: %@", profile.linkURL);
+        
+        self.btnUpload.enabled = YES;
+        [self.btnUpload setTitle:@"Upload" forState:UIControlStateNormal];
+        [self initWithId:profile.userID];
+    } else {
+        self.btnUpload.enabled = NO;
+        [self.btnUpload setTitle:@"Please login first" forState:UIControlStateDisabled];
+    }
+
+}
+
+-(void)viewDidAppear:(BOOL)animated {
+    NSLog(@"first viewDidAppear");
+}
+-(void)viewDidLoad {
+    NSLog(@"first viewDidLoad");
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
