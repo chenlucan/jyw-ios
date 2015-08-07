@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "512885A71B56D27200A48470"
-               BuildableName = "jyw-webrtc-with-cocoapods.app"
-               BlueprintName = "jyw-webrtc-with-cocoapods"
-               ReferencedContainer = "container:jyw-webrtc-with-cocoapods.xcodeproj">
+               BuildableName = "jyw-ios.app"
+               BlueprintName = "jyw-ios"
+               ReferencedContainer = "container:jyw-ios.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -29,9 +29,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "512885C01B56D27200A48470"
-               BuildableName = "jyw-webrtc-with-cocoapodsTests.xctest"
-               BlueprintName = "jyw-webrtc-with-cocoapodsTests"
-               ReferencedContainer = "container:jyw-webrtc-with-cocoapods.xcodeproj">
+               BuildableName = "jyw-iosTests.xctest"
+               BlueprintName = "jyw-iosTests"
+               ReferencedContainer = "container:jyw-ios.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,9 +47,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "512885C01B56D27200A48470"
-               BuildableName = "jyw-webrtc-with-cocoapodsTests.xctest"
-               BlueprintName = "jyw-webrtc-with-cocoapodsTests"
-               ReferencedContainer = "container:jyw-webrtc-with-cocoapods.xcodeproj">
+               BuildableName = "jyw-iosTests.xctest"
+               BlueprintName = "jyw-iosTests"
+               ReferencedContainer = "container:jyw-ios.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -57,9 +57,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "512885A71B56D27200A48470"
-            BuildableName = "jyw-webrtc-with-cocoapods.app"
-            BlueprintName = "jyw-webrtc-with-cocoapods"
-            ReferencedContainer = "container:jyw-webrtc-with-cocoapods.xcodeproj">
+            BuildableName = "jyw-ios.app"
+            BlueprintName = "jyw-ios"
+            ReferencedContainer = "container:jyw-ios.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -77,9 +77,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "512885A71B56D27200A48470"
-            BuildableName = "jyw-webrtc-with-cocoapods.app"
-            BlueprintName = "jyw-webrtc-with-cocoapods"
-            ReferencedContainer = "container:jyw-webrtc-with-cocoapods.xcodeproj">
+            BuildableName = "jyw-ios.app"
+            BlueprintName = "jyw-ios"
+            ReferencedContainer = "container:jyw-ios.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -96,9 +96,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "512885A71B56D27200A48470"
-            BuildableName = "jyw-webrtc-with-cocoapods.app"
-            BlueprintName = "jyw-webrtc-with-cocoapods"
-            ReferencedContainer = "container:jyw-webrtc-with-cocoapods.xcodeproj">
+            BuildableName = "jyw-ios.app"
+            BlueprintName = "jyw-ios"
+            ReferencedContainer = "container:jyw-ios.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

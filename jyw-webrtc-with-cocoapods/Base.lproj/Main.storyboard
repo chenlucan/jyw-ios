@@ -16,9 +16,10 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MMC-PF-5rh">
-                                <rect key="frame" x="277" y="285" width="50" height="30"/>
-                                <state key="normal" title="Upload">
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MMC-PF-5rh">
+                                <rect key="frame" x="16" y="285" width="568" height="30"/>
+                                <state key="normal" title="btnTitle">
+                                    <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
@@ -28,7 +29,10 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
-                    <tabBarItem key="tabBarItem" systemItem="mostViewed" id="vIf-LK-mxc"/>
+                    <tabBarItem key="tabBarItem" title="" systemItem="favorites" id="vIf-LK-mxc"/>
+                    <connections>
+                        <outlet property="btnUpload" destination="MMC-PF-5rh" id="bCc-c0-HRl"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aa2-mE-90M" sceneMemberID="firstResponder"/>
             </objects>
@@ -45,28 +49,7 @@
                     <view key="view" contentMode="scaleToFill" id="YAK-NU-Abc">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" text="Second View" textAlignment="center" lineBreakMode="tailTruncation" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="c7a-PI-Euh">
-                                <rect key="frame" x="195" y="279" width="209.5" height="41.5"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="36"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loaded by SecondViewController" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ne5-ta-Yf0">
-                                <rect key="frame" x="192" y="329" width="215.5" height="17"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                        <constraints>
-                            <constraint firstAttribute="centerY" secondItem="c7a-PI-Euh" secondAttribute="centerY" id="3nt-bD-j8q"/>
-                            <constraint firstAttribute="centerX" secondItem="c7a-PI-Euh" secondAttribute="centerX" id="Oe4-ei-Dgx"/>
-                            <constraint firstItem="Ne5-ta-Yf0" firstAttribute="centerX" secondItem="c7a-PI-Euh" secondAttribute="centerX" id="kBW-ig-PWJ"/>
-                            <constraint firstItem="Ne5-ta-Yf0" firstAttribute="top" secondItem="c7a-PI-Euh" secondAttribute="bottom" constant="8" symbolic="YES" id="njl-oX-aVQ"/>
-                        </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" systemItem="contacts" id="yyW-OH-bu0"/>
                 </viewController>
