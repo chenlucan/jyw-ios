@@ -20,9 +20,12 @@
 #import <QBImagePickerController/QBImagePickerController.h>
 
 @interface JYWMainViewController () <RTCPeerConnectionDelegate, RTCSessionDescriptionDelegate, PNObjectEventListener, RTCDataChannelDelegate, UINavigationControllerDelegate, QBImagePickerControllerDelegate>
+@property (weak, nonatomic) IBOutlet UIButton *btnConnect;
+@property (weak, nonatomic) IBOutlet UITextField *txtFieldEmail;
 @property (weak, nonatomic) IBOutlet UIButton *btnUpload;
 
 @property(nonatomic, strong) NSString *userID;
+@property(nonatomic, strong) NSString *email;
 @property(nonatomic, strong) NSString *other_userID;
 @property(nonatomic, strong) NSString *firstPart;
 @property(nonatomic, strong) NSString *secondPart;
@@ -33,6 +36,11 @@
 @property(nonatomic, strong) RTCDataChannel *dataChannel;
 @property(nonatomic, strong) QBImagePickerController *pickController;
 @property(nonatomic) PubNub *client;
+@property(nonatomic) BOOL channelOpened;
+
+@property(nonatomic, strong) NSMutableData *rc_file_data;
+@property(nonatomic, strong) NSMutableString *rc_file_name;
+@property(nonatomic) NSUInteger rc_file_size;
 
 @end
 
@@ -51,7 +59,7 @@
         } else {
             NSLog(@"not loggedin yet");
             self.btnUpload.enabled = NO;
-            [self.btnUpload setTitle:@"Please login first" forState:UIControlStateDisabled];
+            [self.btnUpload setTitle:@"Login and Connect" forState:UIControlStateDisabled];
         }
     }
     [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
@@ -67,83 +75,16 @@
         return;
     }
     NSLog(@"initWithId: uid:%@", uid);
-    NSMutableString *offerer  = [NSMutableString stringWithString:@"com.lucanchen.offerer."];
-    NSMutableString *answerer = [NSMutableString stringWithString:@"com.lucanchen.answerer."];
-    [offerer appendString:uid];
-    [answerer appendString:uid];
+    NSMutableString *offerer  = [NSMutableString stringWithString:@"com.lucanchen.offerer"];
+    NSMutableString *answerer = [NSMutableString stringWithString:@"com.lucanchen.answerer"];
+//    [offerer appendString:uid];   we are using email as channel
+//    [answerer appendString:uid];
 
     self.userID = offerer;
     self.other_userID = answerer;
     self.messageQueue = [[NSMutableArray alloc] init];
     self.offer_answer_done = NO;
     self.dataChannel = nil;
-        
-    PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37"
-                                                                         subscribeKey:@"sub-c-3af2bc02-2b93-11e5-9bdb-0619f8945a4f"];
-    self.client = [PubNub clientWithConfiguration:configuration];
-    [self.client addListener:self];
-    [self.client subscribeToChannels:@[@"webrtc-app"] withPresence:YES];
-        
-    self.factory = [[RTCPeerConnectionFactory alloc] init];
-        
-        
-    // valid STUN/TURN servers.
-    // NSURL *url2 = [NSURL URLWithString:@"turn:turn.bistri.com:80"];
-    // NSURL *url3 = [NSURL URLWithString:@"turn:turn.anyfirewall.com:443?transport=tcp"];
-    // NSURL *url4 = [NSURL URLWithString:@"stun:stun.anyfirewall.com:3478"];
-    // RTCICEServer *server2 = [[RTCICEServer alloc] initWithURI:url2 username:@"homeo" password:@"homeo"];
-    // RTCICEServer *server3 = [[RTCICEServer alloc] initWithURI:url3 username:@"webrtc" password:@"webrtc"];
-    // RTCICEServer *server4 = [[RTCICEServer alloc] initWithURI:url4 username:@"" password:@""];
-    NSURL *url1 = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
-    RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:url1 username:@"" password:@""];
-    NSArray *ice_servers = @[server1];
-    self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:nil delegate:self];
-        
-    // createDataChannel
-    self.dataChannel = [self.peerConnection createDataChannelWithLabel:@"" config:nil];
-    self.dataChannel.delegate = self;
-    [self.peerConnection createOfferWithDelegate:self constraints:nil];
-        
-    self.pickController = nil;
-}
-- (void)initCommonWithUserID:(NSString *)uid {
-    self.userID = @"com.lucanchen.offerer";
-        self.other_userID = @"com.lucanchen.answerer";
-        self.messageQueue = [[NSMutableArray alloc] init];
-        self.offer_answer_done = NO;
-        self.dataChannel = nil;
-        
-        PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37"
-                                                                         subscribeKey:@"sub-c-3af2bc02-2b93-11e5-9bdb-0619f8945a4f"];
-        self.client = [PubNub clientWithConfiguration:configuration];
-        [self.client addListener:self];
-        [self.client subscribeToChannels:@[@"webrtc-app"] withPresence:YES];
-        
-        self.factory = [[RTCPeerConnectionFactory alloc] init];
-        
-        // Create peer connection.
-        NSURL *url1 = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
-        RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:url1 username:@"" password:@""];
-        NSArray *ice_servers  = @[server1];
-        self.peerConnection   = [self.factory peerConnectionWithICEServers:ice_servers constraints:nil delegate:self];
-        
-        // createDataChannel
-        self.dataChannel = [self.peerConnection createDataChannelWithLabel:@"" config:nil];
-        self.dataChannel.delegate = self;
-        NSLog(@"self.dataChannel, %@", self.dataChannel.label);
-        NSLog(@"self.dataChannel, %@", self.dataChannel.isReliable ? @"Yes" : @"No");
-        NSLog(@"self.dataChannel, %@", self.dataChannel.isOrdered ? @"Yes" : @"No");
-        NSLog(@"self.dataChannel, %ld", self.dataChannel.maxRetransmitTime);
-        NSLog(@"self.dataChannel, %ld", self.dataChannel.maxRetransmits);
-        NSLog(@"self.dataChannel, %@", self.dataChannel.protocol);
-        NSLog(@"self.dataChannel, %@", self.dataChannel.isNegotiated ? @"Yes" : @"No");
-        NSLog(@"self.dataChannel, %ld", self.dataChannel.streamId);
-        NSLog(@"self.dataChannel, %d", self.dataChannel.state);
-        NSLog(@"self.dataChannel, %ld", self.dataChannel.bufferedAmount);
-        
-        NSLog(@"================created DataChannel, state:%d", self.dataChannel.state);
-        [self.peerConnection createOfferWithDelegate:self constraints:nil];
-        self.pickController = nil;
 }
 
 - (void)FBSDKProfileChanged:(NSNotification *)notification {
@@ -158,12 +99,10 @@
         NSLog(@"2==========name: %@", profile.name);
         NSLog(@"2==========linkURL: %@", profile.linkURL);
         
-        self.btnUpload.enabled = YES;
-        [self.btnUpload setTitle:@"Upload" forState:UIControlStateNormal];
         [self initWithId:profile.userID];
     } else {
         self.btnUpload.enabled = NO;
-        [self.btnUpload setTitle:@"Please login first" forState:UIControlStateDisabled];
+        [self.btnUpload setTitle:@"Login and Connect" forState:UIControlStateDisabled];
     }
 }
 
@@ -178,15 +117,19 @@
         NSLog(@"1==========userID: %@", profile.userID);
         NSLog(@"1==========name: %@", profile.name);
         NSLog(@"1==========linkURL: %@", profile.linkURL);
+        if (self.channelOpened) {
+            self.btnUpload.enabled = YES;
+            [self.btnUpload setTitle:@"Upload" forState:UIControlStateNormal];
+        } else {
+            self.btnUpload.enabled = NO;
+            [self.btnUpload setTitle:@"Login and Connect" forState:UIControlStateDisabled];
+        }
         
-        self.btnUpload.enabled = YES;
-        [self.btnUpload setTitle:@"Upload" forState:UIControlStateNormal];
         [self initWithId:profile.userID];
     } else {
         self.btnUpload.enabled = NO;
-        [self.btnUpload setTitle:@"Please login first" forState:UIControlStateDisabled];
+        [self.btnUpload setTitle:@"Login and Connect" forState:UIControlStateDisabled];
     }
-
 }
 
 -(void)viewDidAppear:(BOOL)animated {
@@ -199,6 +142,12 @@
 - (void)applicationWillResignActive:(UIApplication *)application {
   // Terminate any calls when we aren't active.
   [self dismissViewControllerAnimated:NO completion:nil];
+}
+- (IBAction)onConnect:(id)sender {
+    self.email = self.txtFieldEmail.text;
+    if ([self.email length] != 0) {
+        [self connectPeer];
+    }
 }
 - (IBAction)onUpload:(id)sender {
     QBImagePickerController *imagePickerController = [QBImagePickerController new];
@@ -327,7 +276,7 @@
             [self.messageQueue addObject:dataDict];
         });
     } else {
-        [self.client publish:dataDict toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+        [self.client publish:dataDict toChannel:self.email withCompletion:^(PNPublishStatus *status) {
             [self processPublishStatus:status];
         }];
         NSLog(@"sending icecandidate");
@@ -359,7 +308,7 @@
                                     @"userID":self.userID,
                                     @"fullPart":json
                                   };
-        [self.client publish:dataDict toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+        [self.client publish:dataDict toChannel:self.email withCompletion:^(PNPublishStatus *status) {
             [self processPublishStatus:status];
         }];
         return;
@@ -390,10 +339,10 @@
 //    
 //    NSString *dataStr2 = [[NSString alloc]initWithData:data2
 //                                              encoding: NSUTF8StringEncoding];
-    [self.client publish:dataDict1 toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+    [self.client publish:dataDict1 toChannel:self.email withCompletion:^(PNPublishStatus *status) {
         
     }];
-    [self.client publish:dataDict2 toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+    [self.client publish:dataDict2 toChannel:self.email withCompletion:^(PNPublishStatus *status) {
         
     }];
     NSLog(@"==========sending two parts offer");
@@ -471,7 +420,7 @@ didSetSessionDescriptionWithError:(NSError *)error {
         
         for (NSDictionary *dataDict in self.messageQueue) {
             NSLog(@"===========sending each icecandidate");
-            [self.client publish:dataDict toChannel:@"webrtc-app" withCompletion:^(PNPublishStatus *status) {
+            [self.client publish:dataDict toChannel:self.email withCompletion:^(PNPublishStatus *status) {
                 [self processPublishStatus:status];
             }];
         }
@@ -480,12 +429,10 @@ didSetSessionDescriptionWithError:(NSError *)error {
     if ([msg objectForKey:@"firstPart"]) {
         NSLog(@"==============received answer from firstPart");
         self.firstPart = msg[@"firstPart"];
-        [self processAnswer];
     }
     if ([msg objectForKey:@"secondPart"]) {
         NSLog(@"==============received answer from secondPart");
         self.secondPart = msg[@"secondPart"];
-        [self processAnswer];
     }
     
     // Handle new message stored in message.data.message
@@ -595,12 +542,18 @@ didSetSessionDescriptionWithError:(NSError *)error {
             break;
         case kRTCDataChannelStateOpen:
             NSLog(@"channelDidChangeState open");
+            self.channelOpened = YES;
+            self.btnUpload.enabled = YES;
+            [self.btnUpload setTitle:@"Upload" forState:UIControlStateNormal];
             break;
         case kRTCDataChannelStateClosing:
             NSLog(@"channelDidChangeState closing");
             break;
         case kRTCDataChannelStateClosed:
             NSLog(@"channelDidChangeState closed");
+            self.channelOpened = NO;
+            self.btnUpload.enabled = NO;
+            [self.btnUpload setTitle:@"Login and Connect" forState:UIControlStateNormal];
             break;
         default:
             break;
@@ -610,8 +563,50 @@ didSetSessionDescriptionWithError:(NSError *)error {
 // Called when a data buffer was successfully received.
 - (void)channel:(RTCDataChannel*)channel
 didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
-    NSString* newStr = [[NSString alloc] initWithData:buffer.data encoding:NSUTF8StringEncoding];
-    NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: text: %@", newStr);
+//    NSString* newStr = [[NSString alloc] initWithData:buffer.data encoding:NSUTF8StringEncoding];
+//    NSLog(@"RTCDataChannel_length didReceiveMessageWithBuffer: buffer.data.length: %ld, newStr_length: %ld", buffer.data.length, [newStr length]);
+    NSError* error;
+    NSDictionary* json = [NSJSONSerialization JSONObjectWithData:buffer.data
+                                                         options:kNilOptions
+                                                           error:&error];
+    if (error) {
+        if (self.rc_file_size && self.rc_file_name) {
+            [self.rc_file_data appendData:buffer.data];
+            if ([self.rc_file_data length] == self.rc_file_size) {
+                // save data
+                UIImage *imageToBeSaved = [UIImage imageWithData:self.rc_file_data];
+                UIImageWriteToSavedPhotosAlbum(imageToBeSaved, nil, nil, nil);
+                NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: saved data to camera roll");
+
+                // then clear
+                NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: clear after saving");
+                [self.rc_file_data setLength:0];
+                self.rc_file_name = [@"" mutableCopy];
+                self.rc_file_size = 0;
+            } else if ([self.rc_file_data length] > self.rc_file_size) {
+                NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: error: received data overflow");
+                [self.rc_file_data setLength:0];
+                self.rc_file_name = [@"" mutableCopy];
+                self.rc_file_size = 0;
+            }
+            NSLog(@"RTCDataChannel didReceiveMessageWithBuffer, received fileData length: %ld", [self.rc_file_data length]);
+            return;
+        }
+        NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: received data when not suppoed to");
+        [self.rc_file_data setLength:0];
+        self.rc_file_name = [@"" mutableCopy];
+        self.rc_file_size = 0;
+    } else {
+        if ([json objectForKey:@"type"] && [json[@"type"]  isEqual: @"File"] && [json objectForKey:@"fileName"] && [json objectForKey:@"fileSize"]) {
+            self.rc_file_name = json[@"fileName"];
+            self.rc_file_size = [json[@"fileSize"] integerValue];
+            self.rc_file_data = [[NSMutableData alloc] init];
+            [self.rc_file_data setLength:0];
+            NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: receive meta data, name: %@, size: %ld", self.rc_file_name, self.rc_file_size);
+        } else {
+            NSLog(@"RTCDataChannel didReceiveMessageWithBuffer: json object dones not contain correct field: %@", json);
+        }
+    }
 }
 
 #pragma mark - QBImagePickerControllerDelegate
@@ -649,6 +644,12 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
     
 }
 
+# pragma mark - view delegate
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+    NSLog(@"touchesBegan:withEvent:");
+    [self.view endEditing:YES];
+    [super touchesBegan:touches withEvent:event];
+}
 
 #pragma mark - Private
 - (void)showAlertWithMessage:(NSString*)message {
@@ -724,13 +725,6 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
     }
     }
 
-- (void) processAnswer {
-    if (self.firstPart && self.secondPart) {
-        
-    } else {
-        
-    }
-}
 
 //- (void) sendImg:(UIImage *)img {
 //    NSData *imgData = UIImageJPEGRepresentation(img, 1.0);
@@ -808,5 +802,51 @@ didReceiveMessageWithBuffer:(RTCDataBuffer*)buffer{
     
     RTCDataBuffer *imgBuf = [[RTCDataBuffer alloc] initWithData:payloadMutable isBinary:YES];
     [self.dataChannel sendData:imgBuf];
+}
+
+-(void) connectPeer {
+    if ([self.email length] == 0) {
+        NSLog(@"Email address is empty. Could not connect to peer.");
+        return;
+    }
+    if (self.peerConnection) {
+        [self.dataChannel close];
+        [self.peerConnection close];
+        
+        self.dataChannel = nil;
+        self.peerConnection = nil;
+    }
+    PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"pub-c-540d3bfa-dd7a-4520-a9e4-907370d2ce37"
+                                                                     subscribeKey:@"sub-c-3af2bc02-2b93-11e5-9bdb-0619f8945a4f"];
+    self.client = [PubNub clientWithConfiguration:configuration];
+    [self.client addListener:self];
+    [self.client subscribeToChannels:@[self.email] withPresence:YES];
+    
+    self.channelOpened = NO;
+    
+    self.factory = [[RTCPeerConnectionFactory alloc] init];
+    
+    // valid STUN/TURN servers.
+    // NSURL *url2 = [NSURL URLWithString:@"turn:turn.bistri.com:80"];
+    // NSURL *url3 = [NSURL URLWithString:@"turn:turn.anyfirewall.com:443?transport=tcp"];
+    // NSURL *url4 = [NSURL URLWithString:@"stun:stun.anyfirewall.com:3478"];
+    // RTCICEServer *server2 = [[RTCICEServer alloc] initWithURI:url2 username:@"homeo" password:@"homeo"];
+    // RTCICEServer *server3 = [[RTCICEServer alloc] initWithURI:url3 username:@"webrtc" password:@"webrtc"];
+    // RTCICEServer *server4 = [[RTCICEServer alloc] initWithURI:url4 username:@"" password:@""];
+    NSURL *url1 = [NSURL URLWithString:@"stun:stun.l.google.com:19302"];
+    RTCICEServer *server1 = [[RTCICEServer alloc] initWithURI:url1 username:@"" password:@""];
+    NSArray *ice_servers = @[server1];
+    self.peerConnection = [self.factory peerConnectionWithICEServers:ice_servers constraints:nil delegate:self];
+    
+    // createDataChannel
+    RTCDataChannelInit *chInit = [[RTCDataChannelInit alloc] init];
+    chInit.isOrdered = YES;
+    chInit.maxRetransmits = 32;
+    chInit.protocol = @"sctp";
+    self.dataChannel = [self.peerConnection createDataChannelWithLabel:@"sendChannel" config:chInit];
+    self.dataChannel.delegate = self;
+    [self.peerConnection createOfferWithDelegate:self constraints:nil];
+    
+    self.pickController = nil;
 }
 @end
