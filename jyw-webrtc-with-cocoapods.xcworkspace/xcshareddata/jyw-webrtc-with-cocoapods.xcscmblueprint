@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "CD287D4FD0DB99D2BA7FD1136A1141D7464CA421",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "7EF7857A1738879C892B3B4A42E4DFB8FC2CB6E3" : 0,
+    "CD287D4FD0DB99D2BA7FD1136A1141D7464CA421" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "21057631-BA70-44EC-B167-4EE59A44529F",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "7EF7857A1738879C892B3B4A42E4DFB8FC2CB6E3" : "webrtc-ios",
+    "CD287D4FD0DB99D2BA7FD1136A1141D7464CA421" : "jyw-webrtc-with-cocoapods"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "jyw-webrtc-with-cocoapods",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "jyw-webrtc-with-cocoapods.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:kapejod\/webrtc-ios.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "7EF7857A1738879C892B3B4A42E4DFB8FC2CB6E3"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:chenlucan\/jyw-ios.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "CD287D4FD0DB99D2BA7FD1136A1141D7464CA421"
+    }
+  ]
+}
