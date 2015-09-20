@@ -2,8 +2,8 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/lucan/projects/jyw-webrtc-with-cocoapods/jyw-ios.xcodeproj">
-   </FileRef>
+location = "group:/Users/lucan/projects/jyw-webrtc-with-cocoapods/jyw-ios.xcodeproj">   
+</FileRef>
    <FileRef
       location = "group:Pods/Pods.xcodeproj">
    </FileRef>
