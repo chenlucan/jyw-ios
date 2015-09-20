@@ -145,6 +145,7 @@
 }
 - (IBAction)onConnect:(id)sender {
     self.email = self.txtFieldEmail.text;
+    self.email = @"lucan"; // hardcode for prototype
     if ([self.email length] != 0) {
         [self connectPeer];
     }
